@@ -1,6 +1,10 @@
 This is a Snakemake pipeline for running automated genome mapping-based RNAseq analysis. 
 
-This
+To use, provide the fastq read files (gzip), genome sequence and gtf file in the reads/, genome/ and results/ directories respectively.
+
+Wildcard for sample identification is "{sample}_1.fastq.gz" and "{sample}_2.fastq.gz". 
+
+The "sample" wildcard is used in all downstream analyses (including PCA and DE analysis).
 
 The pipeline is designed for paired-end Illumina reads and it includes:
 
