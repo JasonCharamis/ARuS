@@ -22,5 +22,5 @@ rule trim_reads:
 
 	message: "Adapter-trimming reads"
 
-	shell: "java -jar /home/pioannidis/Programs/trimmomatic_0.39/trimmomatic-0.39.jar PE -threads {threads} {input.r1} {input.r2} {output.r1_trimmed} {output.r1_garbage} {output.r2_trimmed} {output.r2_garbage} ILLUMINACLIP:/home/pioannidis/Programs/trimmomatic_0.39/adapters/TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:50"
+	shell: "java -jar trimmomatic-0.39.jar PE -threads {threads} {input.r1} {input.r2} {output.r1_trimmed} {output.r1_garbage} {output.r2_trimmed} {output.r2_garbage} ILLUMINACLIP:trimmomatic_0.39/adapters/TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:50"
 
