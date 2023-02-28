@@ -6,17 +6,17 @@ gtf = { f for f in os.listdir ("genome" ) if f.endswith(".gtf") }
 #de_subsets = { f[:-10] for f in os.listdir("edgeR/02_analyze_DE/") if f.endswith("DE.subset") }
 samples = sorted(samples)
 
-include: '/data/iasonas/bin/snakemake/rnaseq_analysis/create_directories.smk'
+include: 'create_directories.smk'
 
-include: '/data/iasonas/bin/snakemake/rnaseq_analysis/trim_reads.smk'
+include: 'trim_reads.smk'
 
-include: '/data/iasonas/bin/snakemake/rnaseq_analysis/build_gnm_idx_and_map.smk'
+include: 'build_gnm_idx_and_map.smk'
 
-include: '/data/iasonas/bin/snakemake/rnaseq_analysis/count.smk'
+include: 'count.smk'
 
-include: '/data/iasonas/bin/snakemake/rnaseq_analysis/edgeR_de.smk'
+include: 'edgeR_de.smk'
 
-inlude: '/data/iasonas/bin/snakemake/rnaseq_analysis/post_DE.smk'
+inlude: 'post_DE.smk'
 
 rule all:
      input:
