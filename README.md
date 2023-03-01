@@ -1,6 +1,6 @@
 This is a Snakemake pipeline for running automated genome mapping-based RNAseq analysis, from fastq reads to DE analysis.
 
-Its reproducibility has been tested in >10 RNAseq-based projects.
+Its reproducibility has been tested in >4 RNAseq-based projects.
 
 Usage:
 
