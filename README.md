@@ -14,7 +14,7 @@ Wildcard for sample identification is "{sample}_1.fastq.gz" and "{sample}_2.fast
 
 The "sample" wildcard is used in all downstream analyses (including PCA and DE analysis).
 
-The pipeline is designed for paired-end Illumina reads and it includes:
+The pipeline is designed for 150-bp paired-end Illumina reads and it includes:
 
 1. Read quality control (QC) and adapter-trimming (trim_reads.smk)
 2. Mapping of reads against provided genome sequence (build_gnm_idx_and_map.smk)
