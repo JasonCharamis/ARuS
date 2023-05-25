@@ -21,6 +21,6 @@ rule mapping:
      output: 'results/{sample}.Aligned.sortedByCoord.out.bam'
 
      threads: 8
-     message: "Mapping reads to genome and converting alignments using samtools"
+     message: "Mapping reads to genome and converting to sorted BAM"
 
      shell: " STAR --runThreadN {threads} --readFilesIn {input.r1_trimmed} {input.r2_trimmed} --genomeDir genome --outSAMtype BAM SortedByCoordinate --outFileNamePrefix results/{wildcards.sample}. "
