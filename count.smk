@@ -12,14 +12,14 @@ rule modify:
 rule samples_list:
         input: rules.modify.output
         output: samples_list = "results/samples.list"
-        shell: " perl counts_to_samples_list.pl {input} | sort -Vk2 > {output.samples_list}"
+        shell: "perl counts_to_samples_list.pl {input} | sort -Vk2 > {output.samples_list}"
 
 rule counts_to_tpm:
         input: counts="results/counts.txt",
                file = "results/samples.list"
 
         output: counts_tpm = "results/counts.tpm"
-        shell: """ perl counts_to_tpm.pl {input.counts} > {output.counts_tpm} """
+        shell: "perl counts_to_tpm.pl {input.counts} > {output.counts_tpm}"
 
 rule pca:
      input: "results/counts.tpm"
