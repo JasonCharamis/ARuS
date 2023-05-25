@@ -18,7 +18,7 @@ rule mapping:
         r1_trimmed = 'reads/trimmed/{sample}_1.trimmed.fastq',
         r2_trimmed = 'reads/trimmed/{sample}_2.trimmed.fastq'
 
-     output: 'results/{sample}.Aligned.sortedByCoord.out.bam'
+     output: protected('results/{sample}.Aligned.sortedByCoord.out.bam')
 
      threads: 8
      message: "Mapping reads to genome and converting to sorted BAM"
