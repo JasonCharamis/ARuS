@@ -1,4 +1,4 @@
-**Automated-RNAseq-analysis-using-Snakemake**
+**Automated RNAseq analysis using Snakemake**
 
 This is a Snakemake pipeline for running automated genome mapping-based RNAseq analysis, from fastq reads to DE analysis.
 
