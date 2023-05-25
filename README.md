@@ -6,6 +6,8 @@ Usage:
 
 snakemake --cores 10 --snakefile Snakefile
 
+You can choose the aligner you want, either hisat2 or STAR (default), by changing the _build_gnm_idx_and_map.smk_ module you will use in _Snakefile_. 
+
 To use, provide the fastq read files (gzip), genome sequence and gtf file in the reads/, genome/ and results/ directories respectively.
 
 Wildcard for sample identification is "{sample}_1.fastq.gz" and "{sample}_2.fastq.gz". 
@@ -22,31 +24,26 @@ The pipeline is designed for paired-end Illumina reads and it includes:
 Dependencies:
 
 FASTQC
-
 https://github.com/s-andrews/FastQC
 
-
 Trimommatic
-
 https://github.com/usadellab/Trimmomatic
 
-
 hisat2
-
 https://github.com/DaehwanKimLab/hisat2
 
+STAR
+https://github.com/alexdobin/STAR
+
+samtools
+https://github.com/samtools/samtools
 
 featureCounts
-
 https://github.com/torkian/subread-1.6.1
 
-
 edgeR
-
 https://bioconductor.org/packages/release/bioc/html/edgeR.html
 
-
 Trinity-bundled Perl scripts for DE analysis using edgeR
-
 https://github.com/trinityrnaseq/trinityrnaseq
 
