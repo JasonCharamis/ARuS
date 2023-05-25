@@ -1,5 +1,5 @@
 
-samples = { f[:-19] for f in os.listdir("reads/trimmed") if f.endswith(".fastq.gz") }
+samples = { f[:-11] for f in os.listdir("reads") if f.endswith(".fastq.gz") }
 genome_fasta = { f for f in os.listdir("genome") if f.endswith ((".fa")) }
 genome_idx = { f[:-3] for f in os.listdir("genome") if f.endswith ((".fa")) }
 gtf = { f for f in os.listdir ("genome" ) if f.endswith(".gtf") }
