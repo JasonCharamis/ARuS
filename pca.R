@@ -52,5 +52,5 @@ pca_res = prcomp(xt, center=T, scale.=F)
 
 pca_res
 
-#draw PCA plot - make a dataframe like iris with Species as the replicate variable - see iris and xt file structure
+#draw PCA plot - autoassign group colors
 autoplot(pca_res, data = xt, label = TRUE, label.size = 3) + theme_few()
