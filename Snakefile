@@ -12,7 +12,6 @@ include: '/data/iasonas/bin/snakemake/rnaseq_analysis/build_gnm_idx_and_map_STAR
 #include: '/data/iasonas/bin/snakemake/rnaseq_analysis/build_gnm_idx_and_map_hisat2.smk'
 include: '/data/iasonas/bin/snakemake/rnaseq_analysis/count.smk'
 include: '/data/iasonas/bin/snakemake/rnaseq_analysis/edgeR_de.smk'
-inlude: '/data/iasonas/bin/snakemake/rnaseq_analysis/post_DE.smk'
 
 wildcard_constraints: samples="trim"
 
