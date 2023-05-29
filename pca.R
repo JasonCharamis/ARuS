@@ -5,6 +5,7 @@ suppressPackageStartupMessages(library("edgeR"))
 library("magrittr")
 library("stringr")
 library(ggfortify)
+library(ggrepel)
 library(ggthemes)
 library("stringi")
 library(dplyr)
@@ -55,6 +56,6 @@ pca_res = prcomp(xt, center=T, scale.=F)
 svg("PCA.svg")
 
 #draw PCA plot - make a dataframe like iris with Species as the replicate variable - see iris and xt file structure
-print ( autoplot(pca_res, data=xtl, colour='Sample', label = TRUE, label.size = 3) + theme_few() )
+print ( autoplot(pca_res, data=xtl, colour='Sample' ) + theme_few() + geom_text_repel(aes(label=rownames(xt),color=Sample)) )
 
 dev.off()
