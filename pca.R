@@ -6,9 +6,9 @@ library("magrittr")
 library("stringr")
 library(ggfortify)
 library(ggthemes)
-
-library(stringr)
-
+library("stringi")
+library(dplyr)
+library(tidyverse)
 
 # Get input file from standard input ------------------------------------------------------------------
 args <- commandArgs(trailingOnly = TRUE)
@@ -17,19 +17,15 @@ stopifnot(length(args) > 0, file.exists(args))
 
 f_counts <- args
 
-# For testing:
-# f_counts <- Sys.glob("results/counts.tpm")
-
 #open file from stdin
 tpm <- read.table(args[1], header=TRUE)
 
+## make first column as rownames ## 
 rownames(tpm) <- tpm[,1]
-
-colnames(tpm) <- str_replace(colnames(tpm), "results.", "")
-
-colnames(tpm) <- str_replace(colnames(tpm), ".s.bam", "")
-
 tpm <- tpm[,-1]
+
+## transform colnames to same syntax ##
+colnames(tpm) <- str_replace(colnames(tpm), "PSKW_|results.|.s.bam|_", "")
 
 tpm <- as.matrix(tpm)
 
@@ -48,9 +44,17 @@ logtpms<-logTPM(tpm, dividebyten = FALSE)
 #run PCA analysis
 xt = t(logtpms)
 
+xt <- as.data.frame(xt)
+
+groups <- str_replace(rownames(xt), "\\d$", "")
+
+xtl <- xt %>% add_column(Sample = groups)
+
 pca_res = prcomp(xt, center=T, scale.=F)
 
-pca_res
+svg("PCA.svg")
 
-#draw PCA plot - autoassign group colors
-autoplot(pca_res, data = xt, label = TRUE, label.size = 3) + theme_few()
+#draw PCA plot - make a dataframe like iris with Species as the replicate variable - see iris and xt file structure
+print ( autoplot(pca_res, data=xtl, colour='Sample', label = TRUE, label.size = 3) + theme_few() )
+
+dev.off()
