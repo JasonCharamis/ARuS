@@ -27,7 +27,7 @@ rownames(tpm) <- tpm[,1]
 tpm <- tpm[,-1]
 
 ## transform colnames to same syntax ##
-colnames(tpm) <- str_replace(colnames(tpm), "PSKW_|results.|.s.bam|_", "")
+colnames(tpm) <- str_replace(colnames(tpm), "results.|.s.bam|_", "")
 
 tpm <- as.matrix(tpm)
 
