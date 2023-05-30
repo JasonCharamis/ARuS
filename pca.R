@@ -57,7 +57,7 @@ pca_res = prcomp(xt, center=T, scale.=F)
 
 svg("PCA.svg")
 
-#draw auto-PCA plot with color mappings for groups
+## draw auto-PCA plot with color mappings for groups ##
 print ( autoplot(pca_res, data=xtl, colour='Sample', legend.size=5) +  labs(title = "Principal Component Analysis using log2TPM values" ) + theme_bw() + geom_text_repel(aes(label=rownames(xt),color=Sample), show.legend = FALSE  ) +
         theme(plot.title=element_text(face="bold",hjust=0.5), legend.title = element_text(size=12), legend.text = element_text(size=12), axis.title=element_text(size=12))   )
 
