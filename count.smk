@@ -19,8 +19,7 @@ rule counts_to_tpm:
         input: counts="results/counts.txt",
                file = "results/samples.list"
 
-        output: #counts_tpm = "results/counts.tpm",
-                counts_mod_tpm="results/counts.mod.tpm"
+        output: counts_mod_tpm="results/counts.mod.tpm"
         shell: """ perl scripts/counts_to_tpm.pl {input.counts} | sed 's/\.Aligned\.sortedByCoord\.out\.bam//g' | sed 's/gene\://g' | sed 's/results\///g' > {output.counts_mod_tpm}"""
 
 rule pca:
