@@ -1,4 +1,3 @@
-
 use strict;
 use warnings;
 
@@ -23,7 +22,6 @@ while ( my $line = <IN> ) {
 
 close (IN);
 
-
 my %seen = ();
 my @lines = ();
 
@@ -37,15 +35,12 @@ while ( my $line = <IN1> ) {
 
 close (IN1);
 
-
 ## extract lines with orthologs for DE genes ##
 my @h = ();
 
 foreach ( keys %DE_genes ) {
     @h = grep(/$_/, @lines);
 }
-
-
 
 ## associate DE genes with orthologs (if exist) ##
 my @n = ();
@@ -83,7 +78,6 @@ for my $left ( 2..scalar(@hs)-1) {
 }
 
 print "\n";
-
 
 ## print new output with orthology ##
 foreach ( keys %DE_genes ) {
