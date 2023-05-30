@@ -40,7 +40,7 @@ logTPM <- function(tpm, dividebyten=TRUE) {
 ## convert tpm to log2tpms ##
 logtpms<-logTPM(tpm, dividebyten = FALSE)
 
-## run PCA analysis ##
+## transpose ##
 xt = t(logtpms)
 
 ## generate sample names for grouping replicates ##
@@ -50,6 +50,7 @@ groups <- str_replace(rownames(xt), "\\d$", "")
 ## add column with sample name to group replicates ##
 xtl <- xt %>% add_column(Sample = groups)
 
+## run PCA analysis ##
 pca_res = prcomp(xt, center=T, scale.=F)
 
 svg("PCA.svg")
