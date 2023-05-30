@@ -13,7 +13,6 @@ my %orthologs = ();
 ## load DE gene IDs ##
 while ( my $line = <IN> ) {
     chomp $line;
-
     if ( $. == 1 ) { $header = $line; }
     
     my @f = split (/\t/,$line);
@@ -29,7 +28,6 @@ while ( my $line = <IN1> ) {
 
     chomp $line;
     push ( @lines, $line);
-
     my @f = split (/\t/,$line);
 }
 
@@ -52,7 +50,6 @@ foreach ( @h ) {
     @n = split (/,/,$b[2]);
 
     for my $v ( @n ) {
-
         if ( $b[1] =~ /Turt/ ) {
             $orthologs{$v}=$b[3];
         }
