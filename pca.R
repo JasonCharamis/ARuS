@@ -1,6 +1,4 @@
-File Edit Options Buffers Tools Help                                                                                                                                                                                                                                                                                                                                                        
-#Principal components analysis bi-plot using TPM values
-#Convert TPM to logTPM values
+## Principal components analysis using log2TPM values ##
 
 suppressPackageStartupMessages(library("edgeR"))
 library("magrittr")
@@ -12,11 +10,9 @@ library("stringi")
 library(dplyr)
 library(tidyverse)
 
-# Get input file from standard input ------------------------------------------------------------------
+## Get input file from standard input ------------------------------------------------------------------
 args <- commandArgs(trailingOnly = TRUE)
-
 stopifnot(length(args) > 0, file.exists(args))
-
 f_counts <- args
 
 ## open file from stdin ##
@@ -29,6 +25,7 @@ tpm <- tpm[,-1]
 ## transform colnames to same syntax ##
 colnames(tpm) <- str_replace(colnames(tpm), "results.|.s.bam|_", "")
 
+## convert to matrix, to allow for log2 transformation ##
 tpm <- as.matrix(tpm)
 
 ## function to convert tpm to log2tpm ##
@@ -46,11 +43,11 @@ logtpms<-logTPM(tpm, dividebyten = FALSE)
 ## run PCA analysis ##
 xt = t(logtpms)
 
-## generate names for grouping replicates ##
+## generate sample names for grouping replicates ##
 xt <- as.data.frame(xt)
 groups <- str_replace(rownames(xt), "\\d$", "")
 
-## add column for grouping replicates ##
+## add column with sample name to group replicates ##
 xtl <- xt %>% add_column(Sample = groups)
 
 pca_res = prcomp(xt, center=T, scale.=F)
