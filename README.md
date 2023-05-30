@@ -22,6 +22,7 @@ The pipeline is designed for 150-bp paired-end Illumina reads and it includes:
 2. Mapping of reads against provided genome sequence (build_gnm_idx_and_map.smk)
 3. Assign mapped reads to genes - this step also computes TPM values and uses them to produce a PCA plot (count.smk)
 4. Differential expression (DE) analysis using edgeR (edgeR_de.smk)
+5. Post-DE annotation of DE genes and combine with orthology results (post_DE.smk)
 
 Dependencies:
 
