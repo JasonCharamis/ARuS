@@ -19,7 +19,7 @@ stopifnot(length(args) > 0, file.exists(args))
 
 f_counts <- args
 
-#open file from stdin
+## open file from stdin ##
 tpm <- read.table(args[1], header=TRUE)
 
 ## make first column as rownames ##
@@ -31,7 +31,7 @@ colnames(tpm) <- str_replace(colnames(tpm), "results.|.s.bam|_", "")
 
 tpm <- as.matrix(tpm)
 
-#function to convert tpm to logtpm
+## function to convert tpm to log2tpm ##
 logTPM <- function(tpm, dividebyten=TRUE) {
   if(dividebyten) {
     logtpm <- log(tpm/10+1, 2)}
@@ -40,14 +40,14 @@ logTPM <- function(tpm, dividebyten=TRUE) {
   return(logtpm)
 }
 
-#convert to logtpms
+## convert tpm to log2tpms ##
 logtpms<-logTPM(tpm, dividebyten = FALSE)
 
-#run PCA analysis
+## run PCA analysis ##
 xt = t(logtpms)
 
+## generate names for grouping replicates ##
 xt <- as.data.frame(xt)
-
 groups <- str_replace(rownames(xt), "\\d$", "")
 
 ## add column for grouping replicates ##
