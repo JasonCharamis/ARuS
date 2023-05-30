@@ -27,4 +27,4 @@ rule analyze_DE:
 
         output: 'edgeR/chkp02'
 
-        shell: "cd edgeR/02_analyze_DE && ln -s ../01_run_DE_analysis/edgeR.*/counts.mod.txt* . && /data/iasonas/Programs/Trinity/Analysis/DifferentialExpression/analyze_diff_expr.pl --matrix ../../results/counts.mod.txt --samples ../01_run_DE_analysis/samples.list -P 1e-3 -C 1 && cd ../ && touch chkp02"
+        shell: "cd edgeR/02_analyze_DE && ln -s ../01_run_DE_analysis/edgeR.*/counts.mod.txt* . && Trinity/Analysis/DifferentialExpression/analyze_diff_expr.pl --matrix ../../results/counts.mod.txt --samples ../01_run_DE_analysis/samples.list -P 1e-3 -C 1 && cd ../ && touch chkp02"
