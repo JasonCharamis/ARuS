@@ -3,17 +3,17 @@ rule count:
         input: expand('results/{sample}.Aligned.sortedByCoord.out.bam', sample = samples)
         threads: 12
         output: 'results/counts.txt'
-        shell: "/data/iasonas/Programs/Subread/featureCounts -M -s 0 -T {threads} -p -t exon -g gene_id -a genome/{gtf} -o {output} {input}"
+        shell: "featureCounts -M -s 0 -T {threads} -p -t exon -g gene_id -a genome/{gtf} -o {output} {input}"
 
 rule modify:
         input: "results/counts.txt"
         output: "results/counts.mod.txt"
-        shell: "perl ~/bin/snakemake/rnaseq_analysis/scripts/counts_mod.pl {input} > {output}"
+        shell: "perl scripts/counts_mod.pl {input} > {output}"
 
 rule samples_list:
         input: rules.modify.output
         output: samples_list = "results/samples.list"
-        shell: " perl ~/bin/snakemake/rnaseq_analysis/scripts/counts_to_samples_list.pl {input} | sort -Vk2 > {output.samples_list}"
+        shell: " perl scripts/counts_to_samples_list.pl {input} | sort -Vk2 > {output.samples_list}"
 
 rule counts_to_tpm:
         input: counts="results/counts.txt",
@@ -21,12 +21,12 @@ rule counts_to_tpm:
 
         output: #counts_tpm = "results/counts.tpm",
                 counts_mod_tpm="results/counts.mod.tpm"
-        shell: """ perl ~/bin/snakemake/rnaseq_analysis/scripts/counts_to_tpm.pl {input.counts} | sed 's/\.Aligned\.sortedByCoord\.out\.bam//g' | sed 's/gene\://g' | sed 's/results\///g' > {output.counts_mod_tpm}"""
+        shell: """ perl scripts/counts_to_tpm.pl {input.counts} | sed 's/\.Aligned\.sortedByCoord\.out\.bam//g' | sed 's/gene\://g' | sed 's/results\///g' > {output.counts_mod_tpm}"""
 
 rule pca:
      input: "results/counts.mod.tpm"
      output: "results/PCA.svg"
-     shell: "Rscript ~/bin/snakemake/rnaseq_analysis/scripts/pca.R {input} && mv PCA.svg results/"
+     shell: "Rscript scripts/pca.R {input} && mv PCA.svg results/"
 
 
 
