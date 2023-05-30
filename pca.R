@@ -1,3 +1,4 @@
+File Edit Options Buffers Tools Help                                                                                                                                                                                                                                                                                                                                                        
 #Principal components analysis bi-plot using TPM values
 #Convert TPM to logTPM values
 
@@ -21,7 +22,7 @@ f_counts <- args
 #open file from stdin
 tpm <- read.table(args[1], header=TRUE)
 
-## make first column as rownames ## 
+## make first column as rownames ##
 rownames(tpm) <- tpm[,1]
 tpm <- tpm[,-1]
 
@@ -56,6 +57,7 @@ pca_res = prcomp(xt, center=T, scale.=F)
 svg("PCA.svg")
 
 #draw PCA plot - make a dataframe like iris with Species as the replicate variable - see iris and xt file structure
-print ( autoplot(pca_res, data=xtl, colour='Sample', legend.size=5 ) + theme_few() + geom_text_repel(aes(label=rownames(xt),color=Sample), show.legend = FALSE) ) 
+print ( autoplot(pca_res, data=xtl, colour='Sample', legend.size=5) +  labs(title = "Principal Component Analysis using log2TPM values" ) + theme_bw() + geom_text_repel(aes(label=rownames(xt),color=Sample), show.legend = FALSE  ) +
+        theme(plot.title=element_text(face="bold",hjust=0.5), legend.title = element_text(size=12), legend.text = element_text(size=12), axis.title=element_text(size=12))   )
 
 dev.off()
