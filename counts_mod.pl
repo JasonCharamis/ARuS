@@ -6,7 +6,14 @@ open ( IN, $ARGV[0] );
 while ( my $line = <IN> ) {
 
     chomp $line;
-    $line =~ s/\.Aligned\.sortedByCoord\.out\.bam|gene:|results\///g;
+
+    if ( $line =~ /\.Aligned\.sortedByCoord/ ) {  
+        $line =~ s/\.Aligned\.sortedByCoord\.out\.bam|gene:|results\///g;
+    }
+
+    else {
+        $line =~ s/\.s\.bam|gene:|results\///g;
+    }
 
     if ( $line =~ /\^|#/ ) {
         next;
