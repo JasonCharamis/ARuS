@@ -20,7 +20,7 @@ rule run_DE_analysis:
 
         output: 'edgeR/chkp01' 
 
-        shell: "cd edgeR/01_run_DE_analysis && /data/iasonas/Programs/Trinity/Analysis/DifferentialExpression/run_DE_analysis.pl --matrix ../../results/counts.mod.txt --method edgeR --samples_file ../../{samples_file} && cd ../ && touch chkp01"
+        shell: "cd edgeR/01_run_DE_analysis && Trinity/Analysis/DifferentialExpression/run_DE_analysis.pl --matrix ../../results/counts.mod.txt --method edgeR --samples_file ../../{samples_file} && cd ../ && touch chkp01"
 
 rule analyze_DE:
         input: 'edgeR/chkp01'
