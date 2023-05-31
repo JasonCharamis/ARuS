@@ -1,7 +1,6 @@
 ## This is a Perl script to reverse sort edgeR DE output according to natural number values ##
 ## Makes use of the Schwartzian transformation ##
 
-use lib '/home/iasonas/perl5/lib/perl5/';
 use strict;
 use warnings;
 use Sort::Versions;
