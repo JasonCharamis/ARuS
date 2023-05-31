@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 my %genes = ();
-
 my @lines = ();
 
 open ( IN, $ARGV[0] );
@@ -14,19 +13,18 @@ while ( my $line = <IN> ) {
 
     $line =~ s/PSKW_//g;
 
-    ## print header based on edgeR file architecture ##
+    #print header based on edgeR file architecture
     if ( $. == 1 ) {
+
         my @f = split (/\t/,$line);
-        $f[0] =~ s/sampleA/Geneid/g;
-        $f[2] =~ s/logFC/log2FC/g;
 
         ## keep only geneid, log2FC, p-value and FDR ##
-        print "$f[0]\tAnnotation\t$f[2]\t$f[4]\t$f[5]\t";
+        print "Geneid\tAnnotation\tFold_Change\tP_value\tFDR\t";
 
         ## print raw read counts per replicate ##
-        for my $p ( 6..scalar(@f) - 1 ) {
+        for my $p ( 7..scalar(@f) - 1 ) {
 
-            ## counts in samples not used in DE analysis (this is affected by PCA) discarded ##
+            ## counts in samples not used in DE analysis discarded ##
             unless ( $p =~ /\b9|13|14|17/ ) {
                 print "$f[$p]\t";
             }
@@ -34,12 +32,13 @@ while ( my $line = <IN> ) {
         print "\n";
 
     }
+
     push ( @lines, $line);
+
 }
 
 open ( IN2, $ARGV[1] );
 
-## open annotation file - description here is in the 7th column ##
 while ( my $line = <IN2> ) {
     chomp $line;
     $line =~ s/\.\d//g;
@@ -52,18 +51,51 @@ while ( my $line = <IN2> ) {
 
 }
 
+
 foreach ( @lines ) {
   ## combine edgeR output and annotation file to print the final output with
   ## only the desired columns from edgeR output and the gene description/annotation
    my @h = split (/\t/,$_);
-    if ( exists $genes{ $h[0] } ) {
-        print "$h[0]\t$genes{$h[0]}\t$h[3]\t$h[5]\t$h[6]\t";
+   if ( exists $genes{ $h[0] } ) {
+   
+   ## transform log2FC values and FDR to scientific ##
+       print "$h[0]\t$genes{$h[0]}\t",dec(fold($h[3])),"\t",scient($h[5]),"\t",scient($h[6]),"\t";
 
         for my $i ( 7..scalar(@h) - 1 ) {
-            unless ( $i =~ /9|13|14|17/ ) {
+            unless ( $i =~ /\b9|13|14|17/ ) {
                 print "$h[$i]\t";
             }
         }
         print "\n";
     }
+}
+
+sub dec {
+    my @input = @_;
+    my $line = $input[0];
+    my $rounded = sprintf("%.3f", $line);
+    return $rounded;   
+}
+
+sub scient {
+    my @input = @_;
+    my $line = $input[0];
+    my $rounded = sprintf("%.2e", $line);
+    return $rounded;   
+}
+
+sub fold {
+    my @input = @_;
+    my $line = $input[0];
+    my $fold = ();
+    
+    if ( $line > 0 ) {
+        $fold = 2**($line);
+    }
+
+    if ( $line < 0 ) {
+        $fold = -2**abs($line);
+    }
+   
+    return $fold;
 }
