@@ -1,5 +1,3 @@
-## Perl script to combine the DE output of edgeR with annotation file to get a description for each gene ##
-
 use strict;
 use warnings;
 
@@ -23,21 +21,21 @@ while ( my $line = <IN> ) {
 
         ## print raw read counts per replicate ##
         for my $p ( 7..scalar(@f) - 1 ) {
-        
-            if ( $p <= scalar(@f) - 2 ) {
 
             ## no samples are removed by default ##
-#           unless ( $p =~ /\b9|13|14|17/ ) {
-                 print "$f[$p]\t";
-                 #}
-           }
-           
-           elsif ( $p == scalar(@f) - 1 ) {
-                 print "$f[$p]\n";
-                 }
+            #           unless ( $p =~ /\b9|13|14|17/ ) {
+            if ( $p <= scalar(@f)-2 ) {
+                print "$f[$p]\t";
+            }
+#       }
+            elsif ( $p == scalar(@f-1)) {
+                print "$f[$p]\n";
+            }
         }
+    }
 
-push ( @lines, $line);
+    push ( @lines, $line);
+
 }
 
 open ( IN1, $ARGV[1] );
@@ -64,11 +62,16 @@ foreach ( @lines ) {
 
         for my $i ( 7..scalar(@h) - 1 ) {
         ## no samples are removed by default ##
-                    #unless ( $i =~ /\b9|13|14|17/ ) {
-            print "$h[$i]\t";
-            #}
+            #unless ( $i =~ /\b9|13|14|17/ ) {
+
+            if ( $i <= scalar(@h)-2 ) {
+                print "$h[$i]\t";
+            }   
+#       }                                                                                                                                                                                                         
+            elsif ( $i == scalar(@h-1)) {
+                print "$h[$i]\n";
+            }
         }
-        print "\n";
     }
 }
 
@@ -98,4 +101,5 @@ sub fold {
     if ( $line < 0 ) {
         $fold = -2**abs(($line));
     }
-    return $fold;   
+    return $fold;
+}
