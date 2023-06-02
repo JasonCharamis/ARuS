@@ -1,6 +1,6 @@
 rule build_genome_index:
         output: 'genome/index_chkp'
-        shell: "STAR --runThreadN 12 --runMode genomeGenerate --genomeDir genome/ --genomeFastaFiles genome/{genome_fasta} --sjdbGTFfile genome/{gtf} --sjdbOverhang 149 && touch genome/index_chkp"
+        shell: "STAR --runThreadN 12 --runMode genomeGenerate --genomeDir genome/ --genomeFastaFiles genome/{genome_fasta} --sjdbGTFfile genome/{gtf} --sjdbOverhang 149 && mkdir results/ && touch genome/index_chkp"
 
 rule gunzip:
      input:
