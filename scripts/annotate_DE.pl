@@ -37,7 +37,7 @@ while ( my $line = <IN> ) {
 
 }
 
-open ( IN1, $ARGV[1] or die "USAGE: perl annotate_DE.pl <edgeR_output> <gene_info>");
+open ( IN1, $ARGV[1] );
 
 while ( my $line = <IN1> ) {
     chomp $line;
