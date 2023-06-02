@@ -32,7 +32,8 @@ de_subset = sorted(de_subset)
 
 ## rules ##
 include: '/home/iasonas/snakemake/rnaseq_analysis/rules/trim_reads.smk'
-include: '/home/iasonas/snakemake/rnaseq_analysis/rules/build_gnm_idx_and_map.smk'
+include: '/home/iasonas/snakemake/rnaseq_analysis/rules/build_gnm_idx_and_map_STAR.smk'
+include: '/home/iasonas/snakemake/rnaseq_analysis/rules/build_gnm_idx_and_map_hisat2.smk'
 include: '/home/iasonas/snakemake/rnaseq_analysis/rules/count.smk'
 include: '/home/iasonas/snakemake/rnaseq_analysis/rules/edgeR_de.smk'
 include: '/home/iasonas/snakemake/rnaseq_analysis/rules/post_DE.smk'
