@@ -39,18 +39,4 @@ include: '/home/iasonas/snakemake/rnaseq_analysis/rules/post_DE.smk'
 
 rule all:
         input:
-           expand('reads/trimmed/{sample}_1.trimmed.fastq.gz', sample=samples),
-           expand('reads/trimmed/{sample}_2.trimmed.fastq.gz', sample=samples),
-           'genome/index_chkp',
-           expand('reads/trimmed/{sample}_1.trimmed.fastq', sample=samples),
-           expand('reads/trimmed/{sample}_2.trimmed.fastq', sample=samples),
-           expand('results/{sample}.Aligned.sortedByCoord.out.bam', sample=samples),
-           'results/counts.txt',
-           'results/counts.mod.txt',
-           'results/counts.mod.tpm',
-           'results/PCA.svg',
-           'results/samples.list',
-           'chkp',
-           'chkp01',
-           'chkp02',
            expand ('edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.xlsx', de_subset=de_subset)
