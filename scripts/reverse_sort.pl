@@ -18,11 +18,11 @@ while ( my $line = <IN> ) {
     
     my @f = split (/\t/,$line);
 
-    if ( $f[3] > 0 ) { 
+    if ( $f[1] > 0 ) { 
         push (@up, $line);
     }
 
-    if ( $f[3] < 0 ) { 
+    if ( $f[1] < 0 ) { 
         push (@down, $line);
     }
 }
@@ -44,5 +44,5 @@ sub schwartz {
 
     return my @sorted = map { $_->[0] }
                         sort { versioncmp ($b->[1],$a->[1]) }
-                        map { my @f = split(/\t/,$_); [$_,$f[3]] } @unsorted;
+                        map { my @f = split(/\t/,$_); [$_,$f[1]] } @unsorted;
 }
