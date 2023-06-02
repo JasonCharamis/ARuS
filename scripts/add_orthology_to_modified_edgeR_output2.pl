@@ -5,7 +5,7 @@ use strict;
 use warnings;
 
 open ( IN, $ARGV[0] );
-open ( IN1, $ARGV[1] or die USAGE: perl add_orthology_to_modified_edgeR_output2.pl <modified_edgeR_output> <Orthogroups.txt> );
+open ( IN1, $ARGV[1] );
 
 my %DE_genes = ();
 my %file = ();
