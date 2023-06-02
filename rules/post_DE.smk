@@ -15,8 +15,13 @@ rule add_orthology:
      output: orthology = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.tsv',
              orthology_sorted = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.tsv'
              
-     shell: """ perl scripts/add_orthology_to_modified_edgeR_DE_output2.pl  {input.annotated} {input.ortho_info} > {output.orthology} && perl scripts/schwartz_transform.pl {output.orthology} > {output.orthology_sorted} """
-
+     shell: """ perl scripts/add_orthology_to_modified_edgeR_DE_output2.pl  {input.annotated} {input.ortho_info} > {output.orthology} """
+      
+rule reverse_sort:
+     input: orthology = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.tsv'
+     output: orthology_sorted = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.tsv'            
+     shell: """ perl scripts/reverse_sort.pl {input.orthology} > {output.orthology_sorted} """
+     
 rule tsv2xlsx:
      input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.tsv'
      output: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.xlsx'
