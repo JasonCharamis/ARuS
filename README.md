@@ -27,31 +27,35 @@ The pipeline is designed for 150-bp paired-end Illumina reads and it includes:
 2. Mapping of reads against provided genome sequence (build_gnm_idx_and_map.smk)
 3. Assign mapped reads to genes - this step also computes TPM values and uses them to produce a PCA plot (count.smk)
 4. Differential expression (DE) analysis using edgeR (edgeR_de.smk)
-5. Post-DE annotation of DE genes and combine with orthology results (post_DE.smk)
+5. Post-DE annotation of DE genes and optionally combine with orthology results (post_DE.smk)
 
 Dependencies:
 
-FASTQC
+1. FASTQC
 https://github.com/s-andrews/FastQC
 
-Trimommatic
+2. Trimommatic
 https://github.com/usadellab/Trimmomatic
 
-hisat2
-https://github.com/DaehwanKimLab/hisat2
-
-STAR
+3. STAR
 https://github.com/alexdobin/STAR
 
-samtools
-https://github.com/samtools/samtools
-
-featureCounts
+4. featureCounts
 https://github.com/torkian/subread-1.6.1
 
-edgeR
+5. edgeR
 https://bioconductor.org/packages/release/bioc/html/edgeR.html
 
-Trinity-bundled Perl scripts for DE analysis using edgeR
+6. Trinity-bundled Perl scripts for DE analysis using edgeR
 https://github.com/trinityrnaseq/trinityrnaseq
+
+
+If you use it on hisat2-mapping mode, you will also need:
+
+7. hisat2
+https://github.com/DaehwanKimLab/hisat2
+
+8. samtools
+https://github.com/samtools/samtools
+
 
