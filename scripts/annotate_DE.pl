@@ -23,18 +23,21 @@ while ( my $line = <IN> ) {
 
         ## print raw read counts per replicate ##
         for my $p ( 7..scalar(@f) - 1 ) {
+        
+            if ( $p <= scalar(@f) - 2 ) {
 
             ## no samples are removed by default ##
 #           unless ( $p =~ /\b9|13|14|17/ ) {
-            print "$f[$p]\t";
-#       }
-    }
-        print "\n";
+                 print "$f[$p]\t";
+                 #}
+           }
+           
+           elsif ( $p == scalar(@f) - 1 ) {
+                 print "$f[$p]\n";
+                 }
+        }
 
-    }
-
-    push ( @lines, $line);
-
+push ( @lines, $line);
 }
 
 open ( IN1, $ARGV[1] );
