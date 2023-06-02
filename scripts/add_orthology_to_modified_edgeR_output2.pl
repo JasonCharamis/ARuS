@@ -1,7 +1,7 @@
 ## Perl script to combine the modified edgeR output with orthology information from Orthofinder output ##  
 ## Makes use of the 'Orthogroups/Orthogroups.txt' file ##
 
-use strict;
+#use strict;
 use warnings;
 
 open ( IN, $ARGV[0] );
@@ -42,6 +42,7 @@ my @h = ();
 foreach ( keys %DE_genes ) {
     @h = grep(/$_/, @lines);
 }
+
 
 ## associate DE genes with orthologs (if exist) ##
 my @n = ();
@@ -95,22 +96,31 @@ foreach ( keys ( %oggs ) ) {
 
 ## add extra column in headers and print ##
 my @hs = split (/\t/,$header);
-print "$hs[0]\t$hs[2]\t$hs[1]\tOrthology\tOG_number\tOG_in_group\t";
+print "$hs[0]\t$hs[1]\t$hs[2]\tOrthology\tOG_number\tOG_in_group\t";
 
 for my $left ( 3..scalar(@hs)-1) {
-   print "$hs[$left]\t"
+    if ( $left <= scalar(@hs)-2 ) {
+        print "$hs[$left]\t";
+    }
+
+    elsif ( $left == scalar(@hs)-1 ) {
+        print "$hs[$left]\n";
+    }   
 }
 
-print "\n";
 
 # print new output with orthology 
 foreach ( keys %DE_genes ) {
 
     my @j = split (/\t/,$DE_genes{$_});
-    print "$j[0]\t$j[2]\t$j[1]\t$orthology{$_}\t$ogs{$_}\t$oggs{$_}\t";
+    print "$j[0]\t$j[1]\t$j[2]\t$orthology{$_}\t$ogs{$_}\t$oggs{$_}\t";
 
     for my $lefti ( 3..scalar(@j)-1) {
-        print "$j[$lefti]\t";
+        if ( $lefti <= scalar(@j) - 2) {
+            print "$j[$lefti]\t";
+        }
+        elsif ( $lefti == scalar(@j) - 1 ) {
+            print "$j[$lefti]\n";
+        }
     }
-    print "\n";
 }
