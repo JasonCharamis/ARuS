@@ -4,21 +4,21 @@ rule rename:
       shell: " perl scripts/rename.pl {input} "
 
 rule annotate_DE:
-     input: de_file='edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.subset',
-            gene_info = 'genome/Aculy_gene_info_20200924.txt'
+     input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.subset', gene_info='genome/Aculy_gene_info_20200924.txt'
      output: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.tsv'
-
-     shell: """ perl cripts/annotate_DE.pl {input.de_file} {input.gene_info} > {output[0]} """
+     shell: """ perl ~/snakemake/rnaseq_analysis/scripts/annotate_DE.pl {input[0]} {input.gene_info} > {output} """
 
 rule add_orthology:
-     input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.tsv', "OrthoFinder/Results_May26/Orthologues/Aculy.tsv"
+     input: annotated = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.tsv',
+            ortho_info = "/home/iasonas/transcriptomes/aculops/new_analysis/orthology_analysis/OrthoFinder/Results_Jun02/Orthogroups/Orthogroups.txt"
+            
      output: orthology = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.tsv',
              orthology_sorted = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.tsv'
-     shell: " perl scripts/add_orthology_to_modified_edgeR_DE_output.pl {input[0]} {input[1]} > {output} && perl scripts/schwartz_transform.pl {output.orthology} > {output.orthology_sorted} "
+             
+     shell: """ perl ~/snakemake/rnaseq_analysis/scripts/add_orthology_to_modified_edgeR_DE_output2.pl  {input.annotated} {input.ortho_info} > {output.orthology} && perl ~/snakemake/rnaseq_analysis/scripts/schwartz_transform.pl {output.orthology} > {output.orthology_sorted} """
 
 rule tsv2xlsx:
      input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.tsv'
      output: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.xlsx'
-
-     shell: """ python3 scripts/tsv2xlsx.py {input[0]} """
+     shell: """ python3 ~/snakemake/rnaseq_analysis/scripts/tsv2xlsx.py {input} """
 
