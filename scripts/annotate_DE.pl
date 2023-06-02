@@ -14,7 +14,7 @@ while ( my $line = <IN> ) {
     $line =~ s/PSKW_//g;
 
     #print header based on edgeR file architecture
-    if ( $. == 1 ) {
+    if ( $line =~ /Geneid/ ) {
 
         my @f = split (/\t/,$line);
 
@@ -24,11 +24,11 @@ while ( my $line = <IN> ) {
         ## print raw read counts per replicate ##
         for my $p ( 7..scalar(@f) - 1 ) {
 
-            ## counts in samples not used in DE analysis discarded ##
-            unless ( $p =~ /\b9|13|14|17/ ) {
-                print "$f[$p]\t";
-            }
-        }
+            ## no samples are removed by default ##
+#           unless ( $p =~ /\b9|13|14|17/ ) {
+            print "$f[$p]\t";
+#       }
+    }
         print "\n";
 
     }
@@ -57,14 +57,13 @@ foreach ( @lines ) {
   ## only the desired columns from edgeR output and the gene description/annotation
    my @h = split (/\t/,$_);
    if ( exists $genes{ $h[0] } ) {
-   
-   ## transform log2FC values and FDR to scientific ##
        print "$h[0]\t$genes{$h[0]}\t",dec(fold($h[3])),"\t",scient($h[5]),"\t",scient($h[6]),"\t";
 
         for my $i ( 7..scalar(@h) - 1 ) {
-            unless ( $i =~ /\b9|13|14|17/ ) {
-                print "$h[$i]\t";
-            }
+        ## no samples are removed by default ##
+                    #unless ( $i =~ /\b9|13|14|17/ ) {
+            print "$h[$i]\t";
+            #}
         }
         print "\n";
     }
@@ -94,8 +93,6 @@ sub fold {
     }
 
     if ( $line < 0 ) {
-        $fold = -2**abs($line);
+        $fold = -2**abs(($line));
     }
-   
-    return $fold;
-}
+    return $fold;   
