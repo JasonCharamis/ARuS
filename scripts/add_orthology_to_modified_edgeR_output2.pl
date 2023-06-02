@@ -1,7 +1,7 @@
 ## Perl script to combine the modified edgeR output with orthology information from Orthofinder output ##  
 ## Makes use of the 'Orthogroups/Orthogroups.txt' file ##
 
-#use strict;
+use strict;
 use warnings;
 
 open ( IN, $ARGV[0] );
@@ -42,7 +42,6 @@ my @h = ();
 foreach ( keys %DE_genes ) {
     @h = grep(/$_/, @lines);
 }
-
 
 ## associate DE genes with orthologs (if exist) ##
 my @n = ();
