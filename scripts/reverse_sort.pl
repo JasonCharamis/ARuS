@@ -33,7 +33,6 @@ foreach ( schwartz(@up) ) {
 }
 
 print "Downregulated\n";
-
 foreach ( schwartz(@down) ) {
     print "$_\n";
 }
