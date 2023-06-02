@@ -2,8 +2,6 @@
 
 This is a Snakemake pipeline for running automated mapping-based RNAseq analysis, from fastq reads to DE analysis.
 
-Its reproducibility has been tested in >4 RNAseq-based projects.
-
 Usage:
 
 First make two directories: 
