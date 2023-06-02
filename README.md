@@ -6,6 +6,13 @@ Its reproducibility has been tested in >4 RNAseq-based projects.
 
 Usage:
 
+First make two directories: 
+
+1. reads/ (add or symbolic link path for gz files)
+2. genome/ (add genome_fasta, gtf and gene_info files)
+
+Then run: 
+
 snakemake --cores 10 --snakefile Snakefile
 
 You can choose the aligner you want, either hisat2 or STAR (default), by changing the _build_gnm_idx_and_map.smk_ module you will use in _Snakefile_. 
