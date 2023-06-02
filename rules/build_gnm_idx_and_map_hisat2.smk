@@ -2,7 +2,7 @@
 #this rule does not need any input to run
 rule build_genome_index:
 	output: 'genome/index_chkp'
-	shell: "hisat2-build -p 8 genome/{genome_fasta} genome/{genome_idx} && touch genome/index_chkp"
+	shell: "hisat2-build -p 8 genome/{genome_fasta} genome/{genome_idx} && touch genome/index_chkp && mkdir results/"
 
 rule mapping:
 	input:
