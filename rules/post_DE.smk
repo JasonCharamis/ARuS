@@ -8,19 +8,19 @@ rule annotate_DE:
      output: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.tsv'
      shell: """ perl scripts/annotate_DE.pl {input[0]} {input.gene_info} > {output} """
 
-rule add_orthology:
-     input: annotated = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.tsv',
-            ortho_info = "OrthoFinder/Results_Jun02/Orthogroups/Orthogroups.txt"
+## Default is adding orthology OFF
+#rule add_orthology:
+ #    input: annotated = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.tsv',
+  #          ortho_info = "OrthoFinder/Results_Jun02/Orthogroups/Orthogroups.txt"
             
-     output: orthology = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.tsv',
-             orthology_sorted = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.tsv'
+   #  output: orthology = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.tsv'
              
-     shell: """ perl scripts/add_orthology_to_modified_edgeR_DE_output2.pl {input.annotated} {input.ortho_info} > {output.orthology} """
+    # shell: """ perl scripts/add_orthology_to_modified_edgeR_DE_output2.pl {input.annotated} {input.ortho_info} > {output.orthology} """
       
 rule reverse_sort:
-     input: orthology = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.tsv'
-     output: orthology_sorted = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.tsv'            
-     shell: """ perl scripts/reverse_sort.pl {input.orthology} > {output.orthology_sorted} """
+     input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.tsv', #orthology = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.tsv'
+     output: sorted = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.tsv'            
+     shell: """ perl scripts/reverse_sort.pl {input} > {output.sorted} """
      
 rule tsv2xlsx:
      input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.tsv'
