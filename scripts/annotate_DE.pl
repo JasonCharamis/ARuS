@@ -37,9 +37,9 @@ while ( my $line = <IN> ) {
 
 }
 
-open ( IN2, $ARGV[1] );
+open ( IN1, $ARGV[1] or die "USAGE: perl annotate_DE.pl <edgeR_output> <gene_info>");
 
-while ( my $line = <IN2> ) {
+while ( my $line = <IN1> ) {
     chomp $line;
     $line =~ s/\.\d//g;
     my @f = split (/\t/,$line);
