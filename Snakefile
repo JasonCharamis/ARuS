@@ -7,7 +7,7 @@ import itertools
 samples = { f[:-11] for f in os.listdir("reads/") if f.endswith(".fastq.gz") }
 
 ## create comparisons based on sample names ##
-groups = [re.sub("PSKW_|\d+$|_\d+$","",i) for i in samples]
+groups = [re.sub("\d+$|_\d+$","",i) for i in samples]
 groups = np.unique(groups)
 
 ##---------------------------------------------------------------------------
