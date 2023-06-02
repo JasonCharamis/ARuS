@@ -19,7 +19,7 @@ while ( my $line = <IN> ) {
         my @f = split (/\t/,$line);
 
         ## keep only geneid, log2FC, p-value and FDR ##
-        print "Geneid\tAnnotation\tFold_Change\tP_value\tFDR\t";
+        print "Geneid\tFold_Change\tAnnotation\tP_value\tFDR\t";
 
         ## print raw read counts per replicate ##
         for my $p ( 7..scalar(@f) - 1 ) {
@@ -57,7 +57,7 @@ foreach ( @lines ) {
   ## only the desired columns from edgeR output and the gene description/annotation
    my @h = split (/\t/,$_);
    if ( exists $genes{ $h[0] } ) {
-       print "$h[0]\t$genes{$h[0]}\t",dec(fold($h[3])),"\t",scient($h[5]),"\t",scient($h[6]),"\t";
+       print "$h[0]\t",dec(fold($h[3])),"\t","$genes{$h[0]}\t",scient($h[5]),"\t",scient($h[6]),"\t";
 
         for my $i ( 7..scalar(@h) - 1 ) {
         ## no samples are removed by default ##
