@@ -19,7 +19,6 @@ To use, provide the fastq read files (gzip), genome sequence and gtf file in the
 
 Wildcard for sample identification is "{sample}_1.fastq.gz" and "{sample}_2.fastq.gz". 
 
-The "sample" wildcard is used in all downstream analyses (including PCA and DE analysis).
 
 The pipeline is designed for 150-bp paired-end Illumina reads and it includes:
 
