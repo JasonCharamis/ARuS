@@ -1,0 +1,2 @@
+SyntaxError in file /home/jason/bin/Automated-RNAseq-analysis-using-Snakemake/workflow/Snakefile, line 115:
+EOF in multi-line statement (Snakefile, line 115)

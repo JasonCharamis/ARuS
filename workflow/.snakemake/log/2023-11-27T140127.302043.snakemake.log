@@ -1,0 +1,2 @@
+SyntaxError in file /home/jason/bin/Automated-RNAseq-analysis-using-Snakemake/workflow/Snakefile, line 221:
+Expecting rule keyword, comment or docstrings inside a rule definition. (Snakefile, line 221)

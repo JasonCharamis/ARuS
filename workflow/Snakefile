@@ -1,6 +1,8 @@
 import os
 import re
 import subprocess
+import numpy as np
+import itertools
 
 ###=============================================================== Snakemake Utils Functions =====================================================================###
 
@@ -23,7 +25,7 @@ def find_repository_name(start_dir="."):
         for root, dirs, files in os.walk(current_dir):
             paths = [path for path in files if re.search("Snakefile|snakefile", path)]
             if paths:
-                if is_docker == "TRUE":  # If the Snakefile is run inside a Docker container, then there will be only one Snakefile, and therefore we can automatically identify it
+                if is_docker():  # If the Snakefile is run inside a Docker container, then there will be only one Snakefile, and therefore we can automatically identify it
                     return re.sub("/workflow/|\.", "", os.path.relpath(root, start_dir))
                 else:  # If the Snakefile is not running inside a Docker container, then get the relative path of the Snakefile from pwd
                     return re.sub("/workflow/|\.", "", os.path.join(root, start_dir) )
@@ -43,44 +45,32 @@ def find_workflow_path(dir="."):
 
 ###=============================================================== Snakemake Pipeline =========================================================================###
 
-if is_docker() == True:
+if is_docker():
     configfile: str("/workflow/" + re.sub("\s+", "", str(find_repository_name(start_dir="."))) + "/config/config.yaml")
 else:
-    configfile: str(re.sub("\s+", "", str(find_workflow_path(dir="."))) + "/config/config.yaml")
+    configfile: str(re.sub("\s+", "", str(find_workflow_path(dir="."))) + "config/config.yaml")
 
-import re
-import numpy as np
-import itertools
-
-## wildcards ##
-samples = { f[:-11] for f in os.listdir("reads/") if f.endswith(".fastq.gz") }
-
-## create comparisons based on sample names ##
-groups = [re.sub("\d+$|_\d+$","",i) for i in samples]
+## Wildcards
+samples = {f[:-11] for f in config['reads']}
+groups = [re.sub("\d+$|_\d+$", "", i) for i in samples]
 groups = np.unique(groups)
 
-def all_pairs (x):
+def all_pairs(x):
     samp = (s for s in x)
     comparisons = {}
-    
+
     for sample1, sample2 in itertools.combinations(samp, 2):
-        comparisons[str(sample1+"_"+sample2)]=str(sample1+"_vs_"+sample2)   
-    return list(comparisons.values())                   
+        comparisons[str(sample1 + "_" + sample2)] = str(sample1 + "_vs_" + sample2)
+
+    return list(comparisons.values())
 
 de_subset = all_pairs(groups)
-wildcard_constraints: samples="trim"
+wildcard_constraints: samples = "trim"
 
 samples = sorted(samples)
 de_subset = sorted(de_subset)
 
-## rules ##
-#include: '/home/iasonas/snakemake/rnaseq_analysis/rules/trim_reads.smk'
-#include: '/home/iasonas/snakemake/rnaseq_analysis/rules/build_gnm_idx_and_map_STAR.smk'
-#include: '/home/iasonas/snakemake/rnaseq_analysis/rules/build_gnm_idx_and_map_hisat2.smk'
-#include: '/home/iasonas/snakemake/rnaseq_analysis/rules/count.smk'
-#include: '/home/iasonas/snakemake/rnaseq_analysis/rules/edgeR_de.smk'
-#include: '/home/iasonas/snakemake/rnaseq_analysis/rules/post_DE.smk'
-
+## Rules
 
 rule all:
     input:
@@ -89,159 +79,161 @@ rule all:
                log2FC_cutoff=config['log2FC_cutoff'])
 
 rule fastqc:
-        input:  'reads/{sample}_1.fastq.gz',
-                'reads/{sample}_2.fastq.gz'
+    input:
+        'reads/{sample}_1.fastq.gz',
+        'reads/{sample}_2.fastq.gz'
 
-        threads: 1
-        output: "reads/fastqc/{sample}_fastqc/fastqc_report.html"
-	conda: "envs/rnaseq.yaml"
-        shell: " mkdir fastqc && 
-	         fastqc {input} -t {threads} "
+    threads: 1
+    output: "reads/fastqc/{sample}_fastqc/fastqc_report.html"
+    conda: "envs/rnaseq.yaml"
+    shell:
+        """
+        mkdir -p reads/fastqc &&
+        fastqc {input} -t {threads}
+        """
 
 rule trim_reads:
-        input: 
-                r1 = 'reads/{sample}_1.fastq.gz',
-                r2 = 'reads/{sample}_2.fastq.gz'
+    input:
+        r1='reads/{sample}_1.fastq.gz',
+        r2='reads/{sample}_2.fastq.gz'
 
-        output:
-                r1_trimmed = 'reads/trimmed/{sample}_1.trimmed.fastq.gz',
-                r2_trimmed = 'reads/trimmed/{sample}_2.trimmed.fastq.gz',
-                r1_garbage = temp('reads/{sample}_1.garbage.fastq.gz'),
-                r2_garbage = temp('reads/{sample}_2.garbage.fastq.gz')
-                
-        threads: config['trimmomatic_threads']
-	conda: "envs/rnaseq.yaml"
-        message: "Adapter-trimming reads"
-        shell: "trimmomatic PE -threads {threads} {input.r1} {input.r2} {output.r1_trimmed} {output.r1_garbage} {output.r2_trimmed} {output.r2_garbage} \
-	        	    ILLUMINACLIP:$(find $(conda info --envs | awk '$1=="*"{print $NF}') -name TruSeq3-PE.fa):2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:50 &&
+    output:
+        r1_trimmed='reads/trimmed/{sample}_1.trimmed.fastq.gz',
+        r2_trimmed='reads/trimmed/{sample}_2.trimmed.fastq.gz',
+        r1_garbage=temp('reads/{sample}_1.garbage.fastq.gz'),
+        r2_garbage=temp('reads/{sample}_2.garbage.fastq.gz')
 
-		mkdir trimmed && 
-		mv *trimmed* trimmed/"
+    threads: config['trimmomatic_threads']
+    conda: "envs/rnaseq.yaml"
+    message: "Adapter-trimming reads"
+    shell:
+        """ trimmomatic PE -threads {threads} {input.r1} {input.r2} {output.r1_trimmed} {output.r1_garbage} {output.r2_trimmed} {output.r2_garbage} \
+            ILLUMINACLIP:$(find $(conda info --envs | awk '$1=="*"{print $NF}') -name TruSeq3-PE.fa):2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:50 &&
+            mkdir trimmed &&
+            mv *trimmed* trimmed/
+        """
 
 rule build_genome_index:
-        output: 'genome/index_chkp'
-	
-	params: genome_fasta=config['genome_fasta'],
-		gtf=config['gtf']
-
-	conda: "envs/rnaseq.yaml"
-
-	threads: star_threads=config['star_build_threads']
-
-	message: "Building genome index"
-
-        shell: "STAR --runThreadN {threads.star_threads} 
-	       	     --runMode genomeGenerate 
-		     --genomeDir genome/ 
-		     --genomeFastaFiles genome/{params.genome_fasta} 
-		     --sjdbGTFfile genome/{params.gtf} 
-		     --sjdbOverhang 149 && 
-		
-		mkdir results/ && touch genome/index_chkp"
+    output: 'index_chkp'
+    conda: "envs/rnaseq.yaml"
+    threads: config['star_build_threads']
+    message: "Building genome index"
+    params:
+        genome_fasta=config['genome_fasta'],
+        gtf=config['gtf']
+    shell:
+        """ star --runThreadN {threads} \
+              --runMode genomeGenerate \
+              --genomeDir  \
+              --genomeFastaFiles {params.genome_fasta} \
+              --sjdbGTFfile {params.gtf} \
+              --sjdbOverhang 149 &&
+         mkdir  &&
+         touch index_chkp
+        """
 
 rule gunzip:
-     input:
+    input:
         'reads/trimmed/{sample}_1.trimmed.fastq.gz',
         'reads/trimmed/{sample}_2.trimmed.fastq.gz'
 
-     output:
+    output:
         'reads/trimmed/{sample}_1.trimmed.fastq',
         'reads/trimmed/{sample}_2.trimmed.fastq'
 
-     conda: "envs/rnaseq.yaml"
-
-     shell: "gunzip {input}"
-
+    conda: "envs/rnaseq.yaml"
+    shell: "gunzip {input}"
 
 rule mapping:
-     input:
-        r1_trimmed = 'reads/trimmed/{sample}_1.trimmed.fastq',
-        r2_trimmed = 'reads/trimmed/{sample}_2.trimmed.fastq'
+    input:
+        r1_trimmed='reads/trimmed/{sample}_1.trimmed.fastq',
+        r2_trimmed='reads/trimmed/{sample}_2.trimmed.fastq'
 
-     output: protected('results/{sample}.Aligned.sortedByCoord.out.bam')
-     threads: star_threads=config['star_map_threads']
-     conda: "envs/rnaseq.yaml"    
-     message: "Mapping reads to genome and converting to sorted BAM"
+    output: protected('{sample}.Aligned.sortedByCoord.out.bam')
+    threads: config['star_map_threads']
+    conda: "envs/rnaseq.yaml"
+    message: "Mapping reads to genome and converting to sorted BAM"
 
-     shell: " STAR --runThreadN {threads} 
-     	      	   --readFilesIn {input.r1_trimmed} {input.r2_trimmed} 
-		   --genomeDir genome 
-		   --outSAMtype BAM SortedByCoordinate 
-		   --outFileNamePrefix results/{wildcards.sample}. "
+    shell: " STAR --runThreadN {threads} \
+                   --readFilesIn {input.r1_trimmed} {input.r2_trimmed} \
+                   --genomeDir genome \
+                   --outSAMtype BAM SortedByCoordinate \
+                   --outFileNamePrefix {wildcards.sample}. "
+
 
 rule count:
-        input: expand('results/{sample}.Aligned.sortedByCoord.out.bam', sample = samples)
-        threads: config['featureCounts_threads']
-        output: 'results/counts.txt'
-	conda: "envs/rnaseq.yaml"
-	params: gtf=config['gtf']
-        shell: " featureCounts -M 
-	       	 	       -s 0 
-			       -T {threads} 
-			       -p 
-			       -t exon 
-			       -g gene_id 
-			       -a genome/{gtf} 
-			       -o {output} {input} "
-			       
+    input:
+        expand('{sample}.Aligned.sortedByCoord.out.bam', sample=samples)
+    threads: config['featureCounts_threads']
+    output: 'counts.txt'
+    conda: "envs/rnaseq.yaml"
+    params: gtf=config['gtf']
+    shell:
+        """ featureCounts -M 
+                            -s 0 
+                            -T {threads} 
+                            -p 
+                            -t exon 
+                            -g gene_id 
+                            -a {params.gtf} 
+                            -o {output} {input} 
+        """
+
 rule modify:
-        input: "results/counts.txt"
-        output: "results/counts.mod.txt"
-        shell: " perl counts_mod.pl {input} > {output} "
+    input: "counts.txt"
+    output: "counts.mod.txt"
+    shell:
+        """ perl counts_mod.pl {input} > {output} """
 
 rule samples_list:
-        input: rules.modify.output
-        output: samples_list = "results/samples.list"
-        shell: " perl counts_to_samples_list.pl {input} | 
-	       	 sort -Vk2 > {output.samples_list} "
+    input: rules.modify.output
+    output: samples_list="samples.list"
+    shell:
+        """ perl counts_to_samples_list.pl {input} | 
+            sort -Vk2 > {output.samples_list} 
+        """
 
 rule counts_to_tpm:
-        input: counts="results/counts.txt",
-               file = "results/samples.list"
+    input:
+        counts="counts.txt",
+        file="samples.list"
 
-        output: counts_mod_tpm="results/counts.mod.tpm"
-        shell: """ perl counts_to_tpm.pl {input.counts} | 
-	       	   sed 's/\.Aligned\.sortedByCoord\.out\.bam//g' | 
-		   sed 's/gene\://g' | 
-		   sed 's/results\///g' > {output.counts_mod_tpm}"""
+    output:
+        counts_mod_tpm="counts.mod.tpm"
+
+    shell:
+        """perl counts_to_tpm.pl {input.counts} |
+           sed 's/\\.Aligned\\.sortedByCoord\\.out\\.bam//g' |
+           sed 's/gene://g' |
+           sed 's/results\\///g' > {output.counts_mod_tpm}
+        """
 
 rule pca:
-     input: "results/counts.mod.tpm"
-     output: "results/PCA.svg"
-     shell: " Rscript pca.R {input} && 
-     	      mv PCA.svg results/ "counts_file = 'results/counts.txt'
-counts_mod = 'results/counts.mod.txt'
-counts_mod_tpm = 'results/counts.mod.tpm'
-samples_file = 'results/samples.list'
-pca='results/PCA.svg'
-
+    input: "counts.mod.tpm"
+    output: "PCA.svg"
+    shell:
+        """ Rscript pca.R {input} && 
+             mv PCA.svg 
+        """
+        
 rule make_directories:
-        input:
-               {counts_file},
-               {samples_file}
-     
-        output: 'chkp'
+    input:
+        "samples.list",
+        "PCA.svg",
+        "counts.txt"
 
-        shell: "mkdir edgeR && 
-	       	cd edgeR && 
-		mkdir 01_run_DE_analysis && 
-		mkdir 02_analyze_DE && 
-		cd ../ && 
-		cp results/counts.mod.txt edgeR/01_run_DE_analysis/ && 
-		cp {samples_file} edgeR/01_run_DE_analysis/ && touch chkp "
+    output: 'chkp'
 
-rule run_DE_analysis:
-        input:  {counts_file},
-                {samples_file},
-                'chkp'
-
-        output: 'edgeR/chkp01' 
-
-        shell: """ cd edgeR/01_run_DE_analysis && 
-	       	   perl run_DE_analysis.pl --matrix ../../results/counts.mod.txt 
-		   			   --method edgeR 
-					   --samples_file ../../results/samples.list && 
-		   cd ../ && touch chkp01 """
+    shell:
+        """ mkdir edgeR &&
+             cd edgeR &&
+             mkdir 01_run_DE_analysis &&
+             mkdir 02_analyze_DE &&
+             cd ../ &&
+             cp counts.mod.txt edgeR/01_run_DE_analysis/ &&
+             cp {input[0]} edgeR/01_run_DE_analysis/ &&
+             touch chkp
+        """
 
 rule run_DE_analysis:
     input:
@@ -249,22 +241,25 @@ rule run_DE_analysis:
         samples_list="samples.list",
         chkp='chkp'
     output: 'edgeR/chkp01'
-    shell: """ cd edgeR/01_run_DE_analysis &&
-               perl run_DE_analysis.pl --matrix ../../../{input.counts_file} --method edgeR --samples_file ../../results/{input.samples_list} &&
-               cd ../ &&
-               touch chkp01 """
-
+    shell:
+        """ cd edgeR/01_run_DE_analysis &&
+             perl run_DE_analysis.pl --matrix ../../../{input.counts_file} --method edgeR --samples_file ../../{input.samples_list} &&
+             cd ../ &&
+             touch chkp01
+        """
 
 rule analyze_DE:
     input: 'edgeR/chkp01'
     output: 'edgeR/chkp02'
-    params: DE_cutoff = config['log2FC_cutoff']
-    shell: """ cd edgeR/02_analyze_DE &&
-               ln -s ../01_run_DE_analysis/edgeR.*/counts.mod.txt* . &&
-               perl analyze_diff_expr.pl --matrix ../../results/counts.mod.txt --samples ../01_run_DE_analysis/samples.list -P 1e-3 -C {params.DE_cutoff} &&
-               cd ../ &&
-               touch chkp02 &&
-               rm ../chkp ../{input} ../{output} """
+    params: DE_cutoff=config['log2FC_cutoff']
+    shell:
+        """ cd edgeR/02_analyze_DE &&
+             ln -s ../01_run_DE_analysis/edgeR.*/counts.mod.txt* . &&
+             perl analyze_diff_expr.pl --matrix ../../counts.mod.txt --samples ../01_run_DE_analysis/samples.list -P 1e-3 -C {params.DE_cutoff} &&
+             cd ../ &&
+             touch chkp02 &&
+             rm ../chkp ../{input} ../{output}
+        """
 
 rule rename:
     input: 'edgeR/02_analyze_DE/counts.mod.txt.{de_subset}.edgeR.DE_results.P1e-3_{log2FC_cutoff}.DE.subset'
@@ -273,12 +268,14 @@ rule rename:
 
 
 rule reverse_sort:
-     input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_{log2FC_cutoff}.DE.annotated.tsv'
-     output: sorted = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_{log2FC_cutoff}.DE.annotated.plus_orthology.sorted.tsv'            
-     shell: """ perl reverse_sort.pl {input} > {output.sorted} """
-
+    input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_{log2FC_cutoff}.DE.annotated.tsv'
+    output: sorted='edgeR/02_analyze_DE/{de_subset}.P1e-3_{log2FC_cutoff}.DE.annotated.plus_orthology.sorted.tsv'
+    shell:
+        """ perl reverse_sort.pl {input} > {output.sorted} """
+        
 
 rule tsv2xlsx:
-     input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_{log2FC_cutoff}.DE.annotated.plus_orthology.sorted.tsv'
-     output: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_{log2FC_cutoff}.DE.annotated.plus_orthology.sorted.xlsx'
-     shell: """ python3 tsv2xlsx.py {input} """
+    input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_{log2FC_cutoff}.DE.annotated.plus_orthology.sorted.tsv'
+    output: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_{log2FC_cutoff}.DE.annotated.plus_orthology.sorted.xlsx'
+    shell:
+        """ python3 tsv2xlsx.py {input} """

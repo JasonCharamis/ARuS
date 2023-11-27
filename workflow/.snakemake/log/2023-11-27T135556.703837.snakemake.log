@@ -1,0 +1,2 @@
+SyntaxError in file /home/jason/bin/Automated-RNAseq-analysis-using-Snakemake/workflow/Snakefile, line 121:
+No rule keywords allowed after run/shell/script/notebook/wrapper/template_engine/cwl in rule trim_reads. (Snakefile, line 121)

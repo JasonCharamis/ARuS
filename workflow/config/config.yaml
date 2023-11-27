@@ -1,3 +1,8 @@
-hisat2_build_threads: 5
-hisat2_map_threads: 8
-samtools_threads: 5
+reads: 'reads.fastq.gz'
+trimmomatic_threads: 12
+genome_fasta: "genome.fasta"
+gtf: "genome.gtf"
+star_build_threads: 12
+star_map_threads: 20
+featureCounts_threads: 12
+log2FC_cutoff: 2

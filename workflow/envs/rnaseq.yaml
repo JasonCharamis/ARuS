@@ -23,3 +23,7 @@ dependencies:
     - r-ggrepel
     - r-stringi
     - r-tidyverse
+
+env:
+  PATH:
+    - scripts/

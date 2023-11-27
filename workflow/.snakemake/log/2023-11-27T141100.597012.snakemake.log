@@ -1,0 +1,3 @@
+TypeError in file /home/jason/bin/Automated-RNAseq-analysis-using-Snakemake/workflow/Snakefile, line 153:
+threads() got an unexpected keyword argument 'star_threads'
+  File "/home/jason/bin/Automated-RNAseq-analysis-using-Snakemake/workflow/Snakefile", line 153, in <module>
