@@ -45,6 +45,6 @@ https://github.com/samtools/samtools
 Every dependency is automatically installed through conda.
 
 **To you use the Docker container, run:**
-git clone https://github.com/JasonCharamis/ARuS.git
-cd ARuS/workflow/ && sudo docker build -t automated_rnaseq_analysis:latest .
-sudo docker run -it -v `pwd`:/workflow -w /workflow automated_rnaseq_analysis:latest snakemake --use-conda --cores 20 --snakefile ARuS/workflow/Snakefile
+1. git clone https://github.com/JasonCharamis/ARuS.git
+2. cd ARuS/workflow/ && sudo docker build -t automated_rnaseq_analysis:latest .
+3. sudo docker run -it -v `pwd`:/workflow -w /workflow automated_rnaseq_analysis:latest snakemake --use-conda --cores 20 --snakefile ARuS/workflow/Snakefile
