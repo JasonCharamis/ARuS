@@ -1,4 +1,4 @@
-**Automated RNAseq analysis using Snakemake**
+**ARuS (Automated RNAseq analysis using Snakemake)**
 
 This is a Snakemake pipeline for running automated mapping-based RNAseq analysis, from fastq reads to DE analysis.
 
