@@ -1,4 +1,4 @@
-name: salmon
+name: rnaseq
 channels:
     - conda-forge
     - bioconda
