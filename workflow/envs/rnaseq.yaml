@@ -8,7 +8,7 @@ dependencies:
     - star
     - subread
     - edgeR
-    - gunzip
+    - gzip
     - r-essentials
     - r-ggplot2
     - r-limma
