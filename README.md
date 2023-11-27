@@ -2,9 +2,13 @@
 
 This is a fully automated Snakemake pipeline for streamlining end-to-end RNAseq analysis, from fastq reads to DE analysis.
 
+**To use as a Docker container, run:**
+1. git clone https://github.com/JasonCharamis/ARuS.git
+2. cd ARuS/workflow/ && sudo docker build -t automated_rnaseq_analysis:latest .
+3. sudo docker run -it -v $(pwd):/workflow -w /workflow automated_rnaseq_analysis:latest snakemake --use-conda --cores 20 --snakefile ARuS/workflow/Snakefile
+
 Usage:
 Wildcard for sample identification is "{sample}_1.fastq.gz" and "{sample}_2.fastq.gz". 
-
 
 The pipeline is designed for 150-bp paired-end Illumina reads and it includes:
 
@@ -44,7 +48,3 @@ https://github.com/samtools/samtools
 
 Every dependency is automatically installed through conda.
 
-**To you use the Docker container, run:**
-1. git clone https://github.com/JasonCharamis/ARuS.git
-2. cd ARuS/workflow/ && sudo docker build -t automated_rnaseq_analysis:latest .
-3. sudo docker run -it -v $(pwd):/workflow -w /workflow automated_rnaseq_analysis:latest snakemake --use-conda --cores 20 --snakefile ARuS/workflow/Snakefile
