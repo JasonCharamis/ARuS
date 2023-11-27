@@ -3,20 +3,6 @@
 This is a Snakemake pipeline for running automated mapping-based RNAseq analysis, from fastq reads to DE analysis.
 
 Usage:
-
-First make two directories: 
-
-1. reads/ (add or symbolic link path for gz files)
-2. genome/ (add genome_fasta, gtf and gene_info files)
-
-Then run: 
-
-snakemake --cores 10 --snakefile Snakefile
-
-You can choose the aligner you want, either hisat2 or STAR (default), by changing the _build_gnm_idx_and_map.smk_ module you will use in _Snakefile_. 
-
-To use, provide the fastq read files (gzip), genome sequence and gtf file in the reads/, genome/ and results/ directories respectively.
-
 Wildcard for sample identification is "{sample}_1.fastq.gz" and "{sample}_2.fastq.gz". 
 
 
@@ -48,7 +34,6 @@ https://bioconductor.org/packages/release/bioc/html/edgeR.html
 6. Trinity-bundled Perl scripts for DE analysis using edgeR
 https://github.com/trinityrnaseq/trinityrnaseq
 
-
 If you use it on hisat2-mapping mode, you will also need:
 
 7. hisat2
@@ -57,4 +42,9 @@ https://github.com/DaehwanKimLab/hisat2
 8. samtools
 https://github.com/samtools/samtools
 
+Every dependency is automatically installed through conda.
 
+****To you use the Docker container, run:**
+git clone https://github.com/JasonCharamis/ARuS.git
+cd ARuS/workflow/ && sudo docker build -t automated_rnaseq_analysis:latest .
+sudo docker run -it -v `pwd`:/workflow -w /workflow automated_rnaseq_analysis:latest snakemake --use-conda --cores 20 --snakefile ARuS/workflow/Snakefile
