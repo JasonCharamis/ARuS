@@ -1,0 +1,7 @@
+trimmomatic_threads: 12
+genome_fasta: "genome.fasta"
+gtf: "genome.gtf"
+star_build_threads: 12
+star_map_threads: 20
+featureCounts_threads: 12
+log2FC_cutoff: 2

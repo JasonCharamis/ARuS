@@ -1,0 +1,25 @@
+name: salmon
+channels:
+    - conda-forge
+    - bioconda
+dependencies:
+    - fastqc
+    - trimmomatic
+    - star
+    - subread
+    - edgeR
+    - gunzip
+    - r-essentials
+    - r-ggplot2
+    - r-limma
+    - r-voom
+    - r-edgeR
+    - r-dplyr
+    - r-magrittr
+    - r-stringr
+    - r-ggplot2
+    - r-ggfortify
+    - r-ggthemes
+    - r-ggrepel
+    - r-stringi
+    - r-tidyverse

@@ -1,29 +1,15 @@
 rule rename:
       input: 'edgeR/02_analyze_DE/counts.mod.txt.{de_subset}.edgeR.DE_results.P1e-3_C2.DE.subset'
       output: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.subset'
-      shell: " perl scripts/rename.pl {input} "
+      shell: " perl rename.pl {input} "
 
-rule annotate_DE:
-     input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.subset', gene_info='genome/Aculy_gene_info_20200924.txt'
-     output: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.tsv'
-     shell: """ perl scripts/annotate_DE.pl {input[0]} {input.gene_info} > {output} """
-
-## Default is adding orthology OFF
-#rule add_orthology:
- #    input: annotated = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.tsv',
-  #          ortho_info = "OrthoFinder/Results_Jun02/Orthogroups/Orthogroups.txt"
-            
-   #  output: orthology = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.tsv'
-             
-    # shell: """ perl scripts/add_orthology_to_modified_edgeR_DE_output2.pl {input.annotated} {input.ortho_info} > {output.orthology} """
-      
 rule reverse_sort:
      input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.tsv', #orthology = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.tsv'
      output: sorted = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.tsv'            
-     shell: """ perl scripts/reverse_sort.pl {input} > {output.sorted} """
+     shell: """ perl reverse_sort.pl {input} > {output.sorted} """
      
 rule tsv2xlsx:
      input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.tsv'
      output: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.plus_orthology.sorted.xlsx'
-     shell: """ python3 scripts/tsv2xlsx.py {input} """
+     shell: """ python3 tsv2xlsx.py {input} """
 

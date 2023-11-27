@@ -1,8 +1,9 @@
 
-#this rule does not need any input to run
 rule build_genome_index:
 	output: 'genome/index_chkp'
-	shell: "hisat2-build -p 8 genome/{genome_fasta} genome/{genome_idx} && mkdir results/ && touch genome/index_chkp"
+	params: hisat2_build_threads = config['hisat2_build_threads']
+	shell: "hisat2-build -p {params.hisat2_build_threads} genome/{genome_fasta} genome/{genome_idx} && 
+	        mkdir results/ && touch genome/index_chkp"
 
 rule mapping:
 	input:
@@ -16,5 +17,16 @@ rule mapping:
 	
 	message: "Mapping reads to genome and converting SAM to BAM files using samtools"
 
-	shell: "hisat2 --dta-cufflinks --threads 8 -x genome/{genome_idx} -1 {input.r1_trimmed} -2 {input.r2_trimmed} | samtools view -b --threads 5 | samtools sort -m 32G --threads 5 -o {output.bam_file} && samtools index -@ 5 {output.bam_file}"
+	params:
+		hisat2_map_threads=config['hisat2_map_threads']
+		samtools_threads=config['samtools_threads']
+
+	shell: "hisat2 --dta-cufflinks 
+	       	       --threads {params.hisat2_map_threads} 
+		       -x genome/{genome_idx} 
+		       -1 {input.r1_trimmed} -2 {input.r2_trimmed} | 
+		
+		samtools view -b - | 
+		samtools sort -m 32G --threads {params.samtools_threads} -o {output.bam_file} && 
+		samtools index -@ {params.samtools_threads} {output.bam_file}"
 

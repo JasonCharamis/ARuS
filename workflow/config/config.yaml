@@ -1,0 +1,3 @@
+hisat2_build_threads: 5
+hisat2_map_threads: 8
+samtools_threads: 5
