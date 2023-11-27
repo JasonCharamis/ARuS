@@ -12,11 +12,11 @@ Wildcard for sample identification is "{sample}_1.fastq.gz" and "{sample}_2.fast
 
 The pipeline is designed for 150-bp paired-end Illumina reads and it includes:
 
-1. Read quality control (QC) and adapter-trimming (trim_reads.smk)
-2. Mapping of reads against provided genome sequence (build_gnm_idx_and_map.smk)
-3. Assign mapped reads to genes - this step also computes TPM values and uses them to produce a PCA plot (count.smk)
-4. Differential expression (DE) analysis using edgeR (edgeR_de.smk)
-5. Post-DE annotation of DE genes and optionally combine with orthology results (post_DE.smk)
+1. Read quality control (QC) and adapter-trimming
+2. Mapping of reads against provided genome sequence
+3. Assign mapped reads to genes - this step also computes TPM values and uses them to produce a PCA plot
+4. Differential expression (DE) analysis using edgeR
+5. Post-DE annotation of DE genes and optionally combine with orthology results
 
 Dependencies:
 
