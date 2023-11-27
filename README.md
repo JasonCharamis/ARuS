@@ -1,6 +1,6 @@
 **ARuS (Automated RNAseq analysis using Snakemake)**
 
-This is a Snakemake pipeline for running automated mapping-based RNAseq analysis, from fastq reads to DE analysis.
+This is a Snakemake pipeline for running automated end-to-end RNAseq analysis, from fastq reads to DE analysis.
 
 Usage:
 Wildcard for sample identification is "{sample}_1.fastq.gz" and "{sample}_2.fastq.gz". 
