@@ -71,4 +71,5 @@ ENV PATH="~/.local:$PATH"
 ENV PATH="ARuS:$PATH"
 ENV PATH="ARuS/workflow/scripts:$PATH"
 
-CMD ["Everything installed!"]
+CMD echo "Everything installed!"
+
