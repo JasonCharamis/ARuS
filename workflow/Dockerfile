@@ -60,18 +60,15 @@ RUN R -e 'install.packages(c("dplyr", "magrittr", "stringr", "ggplot2", "ggforti
 RUN conda install wheel &&\
     conda install snakemake
 
-RUN git clone Automated-RNAseq-analysis-using-Snakemake.git &&\
-    git clone https://github.com/JasonCharamis/Snakemake_utils.git
-
-ENV PYTHONPATH="$PYTHONPATH:Snakemake_utils"
+RUN git clone https://github.com/JasonCharamis/ARuS.git &&\
 
 RUN curl -O -L https://raw.githubusercontent.com/trinityrnaseq/trinityrnaseq/master/Analysis/DifferentialExpression/run_DE_analysis.pl &&\
     curl -O -L https://raw.githubusercontent.com/trinityrnaseq/trinityrnaseq/master/Analysis/DifferentialExpression/analyze_diff_expr.pl
 
-RUN mv *.pl Automated-RNAseq-analysis-using-Snakemake/workflow/scripts
+RUN mv *.pl ARuS/workflow/scripts
 
 ENV PATH="~/.local:$PATH"
-ENV PATH="Automated-RNAseq-analysis-using-Snakemake:$PATH"
-ENV PATH="Automated-RNAseq-analysis-using-Snakemake/workflow/scripts:$PATH"
+ENV PATH="ARuS:$PATH"
+ENV PATH="ARuS/workflow/scripts:$PATH"
 
 CMD ["Everything installed!"]
