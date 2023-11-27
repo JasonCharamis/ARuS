@@ -18,7 +18,7 @@ RUN apt-get update && \
         libxml2-dev \
         git \
         python3-pip \
-	gunzip \
+	gzip \
 	wget
 
 # Install Miniconda
