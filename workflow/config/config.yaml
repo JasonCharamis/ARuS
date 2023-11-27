@@ -1,4 +1,4 @@
-reads: 'reads.fastq.gz'
+read_dir: 'name of directory with reads fastq files'
 trimmomatic_threads: 12
 genome_fasta: "genome.fasta"
 gtf: "genome.gtf"

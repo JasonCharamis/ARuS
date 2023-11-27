@@ -51,7 +51,7 @@ else:
     configfile: str(re.sub("\s+", "", str(find_workflow_path(dir="."))) + "config/config.yaml")
 
 ## Wildcards
-samples = {f[:-11] for f in config['reads']}
+samples = {f[:-11] for f in os.listdir(config['read_dir'] if f.endswith(".fastq.gz"))}
 groups = [re.sub("\d+$|_\d+$", "", i) for i in samples]
 groups = np.unique(groups)
 
