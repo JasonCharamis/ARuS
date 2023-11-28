@@ -60,7 +60,7 @@ RUN R -e 'install.packages(c("dplyr", "magrittr", "stringr", "ggplot2", "ggforti
 RUN conda install wheel &&\
     conda install snakemake
 
-RUN git clone https://github.com/JasonCharamis/ARuS.git &&\
+RUN git clone https://github.com/JasonCharamis/ARuS.git
 
 RUN curl -O -L https://raw.githubusercontent.com/trinityrnaseq/trinityrnaseq/master/Analysis/DifferentialExpression/run_DE_analysis.pl &&\
     curl -O -L https://raw.githubusercontent.com/trinityrnaseq/trinityrnaseq/master/Analysis/DifferentialExpression/analyze_diff_expr.pl
