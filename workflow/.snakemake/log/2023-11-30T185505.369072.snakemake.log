@@ -1,0 +1,2 @@
+SyntaxError in file /home/jason/bin/ARuS/workflow/Snakefile, line 226:
+Unexpected keyword pca in rule definition (Snakefile, line 226)

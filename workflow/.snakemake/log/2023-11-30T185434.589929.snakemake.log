@@ -1,0 +1,2 @@
+SyntaxError in file /home/jason/bin/ARuS/workflow/Snakefile, line 227:
+positional argument follows keyword argument
