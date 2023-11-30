@@ -1,6 +1,8 @@
 FROM condaforge/mambaforge:latest
-LABEL io.github.snakemake.containerized="true"
-LABEL io.github.snakemake.conda_env_hash="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+LABEL maintainer = "Jason Charamis" 
+LABEL contact    = "jason.charamis@gmail.com"
+LABEL build_date = "2023-11-30"
+LABEL version    = "v.0.0.1-dev"
 
 ## Dockerfile to build Docker image for this Snakemake workflow.
 FROM ubuntu:20.04
