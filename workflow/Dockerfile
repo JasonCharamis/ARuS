@@ -1,11 +1,11 @@
-FROM condaforge/mambaforge:latest
+## Dockerfile to build Docker image for this Snakemake workflow.
+FROM ubuntu:20.04
+
 LABEL maintainer = "Jason Charamis" 
 LABEL contact    = "jason.charamis@gmail.com"
 LABEL build_date = "2023-11-30"
 LABEL version    = "v.0.0.1-dev"
 
-## Dockerfile to build Docker image for this Snakemake workflow.
-FROM ubuntu:20.04
 
 # Set environment variables for non-interactive installation
 ENV DEBIAN_FRONTEND=noninteractive

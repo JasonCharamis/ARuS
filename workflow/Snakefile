@@ -130,12 +130,12 @@ rule build_genome_index:
     shell:
         """ star --runThreadN {threads} \
                  --runMode genomeGenerate \
-		 --genomeDir  \
+		 --genomeDir genome/  \
 		 --genomeFastaFiles {params.genome_fasta} \
 		 --sjdbGTFfile {params.gtf} \
 		 --sjdbOverhang 149 && \
 
-            mkdir  && \
+            mkdir genome/  && \
             touch index_chkp """
 
 rule gunzip:
@@ -163,7 +163,7 @@ rule mapping:
 
     shell: " STAR --runThreadN {threads} \
                    --readFilesIn {input.r1_trimmed} {input.r2_trimmed} \
-                   --genomeDir genome \
+                   --genomeDir genome/ \
                    --outSAMtype BAM SortedByCoordinate \
                    --outFileNamePrefix {wildcards.sample}. "
 
