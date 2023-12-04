@@ -6,6 +6,10 @@ LABEL contact    = "jason.charamis@gmail.com"
 LABEL build_date = "2023-11-30"
 LABEL version    = "v.0.0.1-dev"
 
+# Set environment variables for non-interactive installation of R
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe
+
 # Step 1: Install essential dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -15,11 +19,6 @@ RUN apt-get update && \
         python3-pip \
 	gzip \
 	wget
-
-
-# Set environment variables for non-interactive installation of R
-ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=Europe
 
 ## Load mambaforge image
 FROM condaforge/mambaforge:latest
