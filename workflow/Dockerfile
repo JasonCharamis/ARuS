@@ -39,6 +39,8 @@ RUN /conda-envs/rnaseq/bin/pip3 install wheel && \
     /conda-envs/rnaseq/bin/pip3 install numpy && \
     /conda-envs/rnaseq/bin/pip3 install snakemake
 
+RUN git clone https://github.com/JasonCharamis/ARuS.git
+
 RUN curl -O -L https://raw.githubusercontent.com/trinityrnaseq/trinityrnaseq/master/Analysis/DifferentialExpression/run_DE_analysis.pl &&\
     curl -O -L https://raw.githubusercontent.com/trinityrnaseq/trinityrnaseq/master/Analysis/DifferentialExpression/analyze_diff_expr.pl
     
