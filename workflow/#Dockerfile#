@@ -9,6 +9,7 @@ LABEL version    = "v.0.0.1-dev"
 # Step 1: Install essential dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+        
         libssl-dev \
         libxml2-dev \
         git \
