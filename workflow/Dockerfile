@@ -17,27 +17,28 @@ RUN apt-get update && \
 	wget
 
 
-FROM condaforge/mambaforge:latest
+# Set environment variables for non-interactive installation of R
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe
 
-RUN conda install -c conda-forge mamba -y
+## Load mambaforge image
+FROM condaforge/mambaforge:latest
 
 RUN mkdir -p /conda-envs/rnaseq
 COPY envs/rnaseq.yaml /conda-envs/rnaseq/environment.yaml
 
+## Install required packages through conda
 RUN mamba env create --prefix /conda-envs/rnaseq --file /conda-envs/rnaseq/environment.yaml && \
     mamba clean --all -y
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -y build-essential curl
 
-# Step 3: Install and test Snakemake
-
+## Install Python packages, including Snakemake, through pip
 RUN /conda-envs/rnaseq/bin/pip3 install wheel && \
     /conda-envs/rnaseq/bin/pip3 install datrie && \
     /conda-envs/rnaseq/bin/pip3 install numpy && \
     /conda-envs/rnaseq/bin/pip3 install snakemake
-
-RUN git clone https://github.com/JasonCharamis/ARuS.git
 
 RUN curl -O -L https://raw.githubusercontent.com/trinityrnaseq/trinityrnaseq/master/Analysis/DifferentialExpression/run_DE_analysis.pl &&\
     curl -O -L https://raw.githubusercontent.com/trinityrnaseq/trinityrnaseq/master/Analysis/DifferentialExpression/analyze_diff_expr.pl
