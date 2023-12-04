@@ -7,13 +7,9 @@ dependencies:
     - trimmomatic
     - star
     - subread
-    - edgeR
     - gzip
     - r-essentials
     - r-ggplot2
-    - r-limma
-    - r-voom
-    - r-edgeR
     - r-dplyr
     - r-magrittr
     - r-stringr
@@ -23,7 +19,10 @@ dependencies:
     - r-ggrepel
     - r-stringi
     - r-tidyverse
-
+    - bioconductor-edger
+    - bioconductor-limma
+    - bioconductor-limma
+    
 env:
   PATH:
     - scripts/

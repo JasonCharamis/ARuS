@@ -7,7 +7,7 @@ LABEL build_date = "2023-11-30"
 LABEL version    = "v.0.0.1-dev"
 
 
-# Set environment variables for non-interactive installation
+# Set environment variables for non-interactive installation of R
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe
 
@@ -23,55 +23,36 @@ RUN apt-get update && \
 	gzip \
 	wget
 
-# Install Miniconda
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && \
-    /bin/bash /tmp/miniconda.sh -b -p /opt/conda && \
-    rm /tmp/miniconda.sh
 
-# Set conda on the PATH
-ENV PATH /opt/conda/bin:$PATH
-RUN conda init --all
+FROM condaforge/mambaforge:latest
 
-# Step 2: Install R without prompts
-RUN apt-get install -y --no-install-recommends \
-        r-base \
-        r-base-dev \
-        && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN conda install -c conda-forge mamba -y
 
-ENV PATH /usr/lib/R/bin:$PATH
+RUN mkdir -p /conda-envs/rnaseq
+COPY envs/rnaseq.yaml /conda-envs/rnaseq/environment.yaml
 
-# Step 2: Retrieve conda environments
+RUN mamba env create --prefix /conda-envs/rnaseq --file /conda-envs/rnaseq/environment.yaml && \
+    mamba clean --all -y
 
-RUN conda install -c bioconda fastqc &&\
-    conda install -c bioconda trimmomatic &&\
-    conda install -c bioconda star &&\
-    conda install -c bioconda subread &&\
-    conda install -c conda-forge r-essentials
-
-# Install BiocManager
-RUN R -e 'install.packages("BiocManager", repos="https://cran.rstudio.com")'
-
-# Install required R packages using BiocManager
-RUN R -e 'BiocManager::install(c("limma", "voom", "edgeR"))'
-
-# Install other required R packages from CRAN
-RUN R -e 'install.packages(c("dplyr", "magrittr", "stringr", "ggplot2", "ggfortify", "ggthemes", "ggrepel", "stringi", "tidyverse"), repos="https://cran.rstudio.com")'
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y build-essential curl
 
 # Step 3: Install and test Snakemake
 
-RUN conda install wheel &&\
-    conda install snakemake
+RUN /conda-envs/rnaseq/bin/pip3 install wheel && \
+    /conda-envs/rnaseq/bin/pip3 install datrie && \
+    /conda-envs/rnaseq/bin/pip3 install numpy && \
+    /conda-envs/rnaseq/bin/pip3 install snakemake
 
 RUN git clone https://github.com/JasonCharamis/ARuS.git
 
 RUN curl -O -L https://raw.githubusercontent.com/trinityrnaseq/trinityrnaseq/master/Analysis/DifferentialExpression/run_DE_analysis.pl &&\
     curl -O -L https://raw.githubusercontent.com/trinityrnaseq/trinityrnaseq/master/Analysis/DifferentialExpression/analyze_diff_expr.pl
-
+    
 RUN mv *.pl ARuS/workflow/scripts
 
 ENV PATH="~/.local:$PATH"
 ENV PATH="ARuS:$PATH"
 ENV PATH="ARuS/workflow/scripts:$PATH"
-
-CMD echo "Everything installed!"
-
+ENV PATH="/conda-envs/rnaseq/bin:$PATH"
+ENV PATH="/usr/lib/R/bin:$PATH"
