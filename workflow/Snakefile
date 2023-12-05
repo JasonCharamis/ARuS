@@ -1,7 +1,6 @@
 import os
 import re
 import subprocess
-import numpy as np
 import itertools
 
 ###=============================================================== Snakemake Utils Functions =====================================================================###
@@ -17,17 +16,21 @@ def is_docker() -> bool:
 
     return False
 
+
 def find_repository_name(start_dir="."):
     current_dir = os.path.abspath(start_dir)
 
     while current_dir != '/':  # Stop searching at the root directory
-        for root, dirs, files in os.walk(current_dir):
-            paths = [path for path in files if re.search("Snakefile|snakefile", path)]
-            if paths:
-                if is_docker():  # If the Snakefile is run inside a Docker container, then there will be only one Snakefile, and therefore we can automatically identify it
-                    return re.sub("/mnt/workdir/|.", "", os.path.relpath(root, start_dir))
-                else:  # If the Snakefile is not running inside a Docker container, then get the relative path of the Snakefile from pwd
-                    return re.sub("/mnt/workdir/|.", "", os.path.join(root, start_dir) )
+        result = subprocess.run(["find", current_dir, "-type", "f", "-name", "Snakefile"], capture_output=True, text=True)
+
+        if result.stdout:
+            snakefiles = result.stdout.strip().split('\n')
+            if len(snakefiles) == 1:
+                return snakefiles[0]
+            else:
+                print("Multiple repositories identified:")
+                for snakefile in snakefiles:
+                    print(f"- {snakefile}")
 
         current_dir = os.path.dirname(current_dir)
 
@@ -45,15 +48,15 @@ def find_workflow_path(dir="."):
 ###=============================================================== Snakemake Pipeline =========================================================================###
 
 if is_docker():
-     configfile: str("/mnt/workdir/" + re.sub(r"\s+", "", str(find_repository_name(start_dir="."))) + "/config/config.yaml") 
+     configfile: str( re.sub ("workflow.*","", find_repository_name(start_dir=".")) ) + "/config/config.yaml"
 else:
-     configfile: str(re.sub(r"\s+", "", str(find_workflow_path(dir="."))) + "config/config.yaml")
+     configfile: str( find_workflow_path(dir=".")) + "config/config.yaml"
 
 ## Wildcards
 samples = sorted(list({ re.sub(r"\s+","", f[:-11]) for f in os.listdir(config['read_dir']) if f.endswith(".fastq.gz")}))
 wildcard_constraints: samples = "trim"
 
-groups = np.unique(samples)
+groups = list(set(samples))
 
 def all_pairs(x):
     comparisons = {}
@@ -63,29 +66,27 @@ def all_pairs(x):
 
     return list(comparisons.values())
 
+de_subset = all_pairs(groups)
 
 #==================================================================== RULE ALL ============================================================================#
 
 rule all:
     input:
-        expand('{sample}.Aligned.sortedByCoord.out.bam', sample = samples)
-
+        expand ("edgeR/02_analyze_DE/{de_subset}.P1e-3_C{log2FC_cutoff}.DE.annotated.sorted.xlsx", de_subset = de_subset, log2FC_cutoff=config['log2FC_cutoff'] )
 
 rule fastqc:
     input:
         r1='{samples}_1.fastq.gz',
         r2='{samples}_2.fastq.gz'
 
-    threads: 1
     output: "fastqc/{samples}_fastqc/fastqc_report.html"
     conda: "envs/rnaseq.yaml"
-    shell:
-        """
-        mkdir -p fastqc && \
-        fastqc {input.r1} -t {threads} && \
-        fastqc {input.r2} -t {threads}
+    threads: 1
 
-        """
+    shell:
+        """ mkdir -p fastqc && 
+	    fastqc {input.r1} -t {threads} && 
+            fastqc {input.r2} -t {threads} """
 
 rule trim_reads:
     input:
@@ -98,11 +99,11 @@ rule trim_reads:
         r1_garbage=temp('{samples}_1.garbage.fastq.gz'),
         r2_garbage=temp('{samples}_2.garbage.fastq.gz')
 
-    threads: config['trimmomatic_threads']
     conda: "envs/rnaseq.yaml"
+    threads: config['trimmomatic_threads']
     message: "Adapter-trimming reads"
     shell:
-        """ trimmomatic PE -threads {threads} {input.r1} {input.r2} {output.r1_trimmed} {output.r1_garbage} {output.r2_trimmed} {output.r2_garbage} \
+        """ trimmomatic PE -threads {threads} {input.r1} {input.r2} {output.r1_trimmed} {output.r1_garbage} {output.r2_trimmed} {output.r2_garbage}
             ILLUMINACLIP:$(find $(conda info --envs | awk '$1=="*"{print $NF}') -name TruSeq3-PE.fa):2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:50 """
 
 
@@ -140,34 +141,29 @@ rule gunzip:
     shell: """ gunzip {input.r1} &&
     	       gunzip {input.r2} """
 
+
 rule mapping:
-    input:
-        r1_trimmed='{samples}_1.trimmed.fastq',
-	r2_trimmed='{samples}_2.trimmed.fastq'
-
-    output: '{samples}.Aligned.sortedByCoord.out.bam'
-
-    threads: config['star_map_threads']
+    input: r1_trimmed='{samples}_1.trimmed.fastq', r2_trimmed='{samples}_2.trimmed.fastq'
+    output: '{samples}.Aligned.sortedByCoord.out.bam', '{samples}.chkpM'
     conda: "envs/rnaseq.yaml"
     message: "Mapping reads to genome and convert to sorted BAM"
+    threads: config['star_map_threads']
+
 
     shell: """ star --runThreadN {threads}
                     --readFilesIn {input.r1_trimmed} {input.r2_trimmed}
                     --genomeDir genome/
                     --outSAMtype BAM SortedByCoordinate
-                    --outFileNamePrefix {samples}. """
+                    --outFileNamePrefix {samples}. && touch {samples}.chkpM """
 
-   
 
-		    
-
-#================================================================ COUNT =================================================================#
+#=============================================================== COUNT =================================================================#
 
 rule count:
     input: bams = expand('{samples}.Aligned.sortedByCoord.out.bam', samples=samples)
-    threads: config['featureCounts_threads']
     output: counts='counts.txt'
     conda: "envs/rnaseq.yaml"
+    threads: config['featureCounts_threads']
     params: gtf=config['gtf']
     shell:
         """ featurecounts -M 
@@ -267,20 +263,19 @@ rule rename:
 #================================================================ POST DE ANNOTATION =================================================================#
 
 rule annotate_DE:
-     input: de_file="edgeR/02_analyze_DE/{de_subset}.P1e-3_C{config['log2FC_cutoff']}.DE.subset",
-            gene_info=config['gene_info']
-     output: annotated='edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.tsv'
+     input: de_file="edgeR/02_analyze_DE/{de_subset}.P1e-3_C{config['log2FC_cutoff']}.DE.subset", gene_info=config['gene_info']
+     output: annotated="edgeR/02_analyze_DE/{de_subset}.P1e-3_C{config['log2FC_cutoff']}.DE.annotated.tsv"
      shell: """ perl annotate_DE.pl {input.de_file} 
      	    	     		    {input.gene_info} > {output.annotated} """
 
 
 rule reverse_sort:
-     input:  unsorted = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.tsv'
-     output: sorted = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.sorted.tsv'
+     input:  unsorted = "edgeR/02_analyze_DE/{de_subset}.P1e-3_C{config['log2FC_cutoff']}.DE.annotated.tsv"
+     output: sorted = "edgeR/02_analyze_DE/{de_subset}.P1e-3_C{config['log2FC_cutoff']}.DE.annotated.sorted.tsv"
      shell: """ perl reverse_sort.pl {input.unsorted} > {output.orthology_sorted} """
 
 
 rule tsv2xlsx:
-     input: tsv='edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.sorted.tsv'
-     output: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.sorted.xlsx'
+     input: tsv="edgeR/02_analyze_DE/{de_subset}.P1e-3_C{config['log2FC_cutoff']}.DE.annotated.sorted.tsv"
+     output: "edgeR/02_analyze_DE/{de_subset}.P1e-3_C{config['log2FC_cutoff']}.DE.annotated.sorted.xlsx"
      shell: """ python3 tsv2xlsx.py {input.tsv} """
