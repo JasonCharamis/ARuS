@@ -275,11 +275,9 @@ rule rename:
 #================================================================ POST DE ANNOTATION =================================================================#
 
 rule annotate_DE:
-     input: de_file='edgeR/02_analyze_DE/{de_subset}.P1e-3_C{log2FC_cutoff}.DE.subset',
-     	    gene_info=config['gene_info']
-
+     input: de_file='edgeR/02_analyze_DE/{de_subset}.P1e-3_C{config['log2FC_cutoff']}.DE.subset',
+            gene_info=config['gene_info']
      output: annotated='edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.tsv'
-
      shell: """ perl annotate_DE.pl {input.de_file} 
      	    	     		    {input.gene_info} > {output.annotated} """
 
@@ -287,7 +285,7 @@ rule annotate_DE:
 rule reverse_sort:
      input:  unsorted = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.tsv'
      output: sorted = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.annotated.sorted.tsv'
-     shell: """ perl reverse_sort.pl {input.orthology} > {output.orthology_sorted} """
+     shell: """ perl reverse_sort.pl {input.unsorted} > {output.orthology_sorted} """
 
 
 rule tsv2xlsx:

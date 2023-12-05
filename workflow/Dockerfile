@@ -18,6 +18,7 @@ RUN apt-get update && \
         git \
         python3-pip \
 	gzip \
+	emacs \
 	wget
 
 ## Load mambaforge image
