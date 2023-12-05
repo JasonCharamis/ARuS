@@ -46,7 +46,7 @@ def find_workflow_path(dir="."):
 ###=============================================================== Snakemake Pipeline =========================================================================###
 
 if is_docker():
-    configfile: str("/workflow/" + re.sub("\s+", "", str(find_repository_name(start_dir="."))) + "/config/config.yaml")
+    configfile: str("/workflow/" + re.sub("\s+", "", str(find_repository_name(start_dir="."))) + "/config/config.yaml") 
 else:
     configfile: str(re.sub("\s+", "", str(find_workflow_path(dir="."))) + "config/config.yaml")
 
@@ -271,6 +271,8 @@ rule rename:
       output: subset_file_renamed='edgeR/02_analyze_DE/{de_subset}.P1e-3_C2.DE.subset'
       shell: """ perl rename.pl {input.subset_file} """
 
+
+#================================================================ POST DE ANNOTATION =================================================================#
 
 rule annotate_DE:
      input: de_file='edgeR/02_analyze_DE/{de_subset}.P1e-3_C{log2FC_cutoff}.DE.subset',

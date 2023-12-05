@@ -1,9 +1,9 @@
-read_dir: "config"
-genome_fasta: "genome.fasta"
-gtf: "genome.gtf"
-gene_info: "gene_info.txt"
+read_dir: "."
+genome_fasta: "dm6.fa"
+gtf: "dm6_2L.gtf"
+#gene_info: "gene_info.txt"
 log2FC_cutoff: 2
-trimmomatic_threads: 12
-star_build_threads: 12
-star_map_threads: 20
-featureCounts_threads: 12
+trimmomatic_threads: 1
+star_build_threads: 1
+star_map_threads: 2
+featureCounts_threads: 1
