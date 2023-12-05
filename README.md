@@ -5,7 +5,7 @@ This is a fully automated Snakemake pipeline for streamlining end-to-end RNAseq 
 **To use as a Docker container, run:**
 1. git clone https://github.com/JasonCharamis/ARuS.git
 2. cd ARuS/workflow/ && sudo docker build -t automated_rnaseq_analysis:latest .
-3. sudo docker run -it -v $(pwd):/workflow -w /workflow automated_rnaseq_analysis:latest snakemake --use-conda --cores 20 --snakefile ARuS/workflow/Snakefile
+3. sudo docker run -it -v $(pwd):/mnt/workdir -w /mnt/workdir automated_rnaseq_analysis:latest snakemake --snakefile ARuS/workflow/Snakefile --cores 1 --use-conda --conda-frontend mamba
 
 Usage:
 Wildcard for sample identification is "{sample}_1.fastq.gz" and "{sample}_2.fastq.gz". 
