@@ -22,7 +22,7 @@ def find_repository_name(start_dir="."):
         if result.stdout:
             snakefiles = result.stdout.strip().split('\n')
             if len(snakefiles) == 1:
-                return snakefiles[0]
+                return ( re.sub("workflow.*","", snakefiles[0]) )
             else:
                 print("Multiple repositories identified:")
                 for snakefile in snakefiles:

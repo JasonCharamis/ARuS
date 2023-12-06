@@ -10,9 +10,9 @@ include: "snakemake_utils.smk"
 ###=============================================================== Snakemake Pipeline =========================================================================###
 
 if is_docker():
-     configfile: str( re.sub ("workflow.*","", find_repository_name(start_dir=".")) ) + "/config/config.yaml"
+     configfile: str(find_repository_name(start_dir=".")) + "/config/config.yaml"
 else:
-     configfile: str( find_workflow_path(dir=".")) + "config/config.yaml"
+     configfile: str(find_workflow_path(dir=".")) + "config/config.yaml"
 
 ## Wildcards
 samples = sorted(list({ re.sub(r"\s+","", f[:-11]) for f in os.listdir(config['read_dir']) if f.endswith(".fastq.gz")}))
