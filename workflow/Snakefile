@@ -37,9 +37,13 @@ de_subsets = all_pairs(groups)
 
 rule all:
     input:
-        expand ({de_subset}.P1e-3_C{log2FC_cutoff}.DE.annotated.sorted.xlsx", 
-	         de_subset = de_subsets, 
-		 log2FC_cutoff=config['log2FC_cutoff'] )
+        expand(
+            "{de_subset}.P1e-3_C{log2FC_cutoff}.DE.annotated.sorted.xlsx",
+            de_subset=de_subsets,
+            log2FC_cutoff=config['log2FC_cutoff']
+        )
+    run:
+        print("List of Samples:", samples)
 
 #=============================================================== FASTQC AND TRIMMING =======================================================================#
 
@@ -65,9 +69,9 @@ rule download_trimmomatic_adapters:
 
 rule trim_reads:
     input:
+        adapters='TruSeq3-PE.fa',
         r1='{sample}_1.fastq.gz',
         r2='{sample}_2.fastq.gz',
-        'TruSeq3-PE.fa'
     output:
         r1_trimmed='{sample}_1.trimmed.fastq.gz',
         r2_trimmed='{sample}_2.trimmed.fastq.gz',
@@ -77,7 +81,7 @@ rule trim_reads:
     threads: config['trimmomatic_threads']
     message: "Adapter-trimming reads"
     shell:
-        """ trimmomatic PE -threads {threads} {input.r1} {input.r2} {output.r1_trimmed} {output.r1_garbage} {output.r2_trimmed} {output.r2_garbage} ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:50 """
+        """ trimmomatic PE -threads {threads} {input.r1} {input.r2} {output.r1_trimmed} {output.r1_garbage} {output.r2_trimmed} {output.r2_garbage} ILLUMINACLIP:{input.adapters}:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:50 """
 
 
 #==================================================================== MAPPING =============================================================================#
