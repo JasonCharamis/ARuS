@@ -46,20 +46,11 @@ rule all:
     input:
         expand(
             "{de_subset}.P1e-3_C{log2FC_cutoff}.DE.annotated.sorted.xlsx",
-<<<<<<< HEAD
 	     de_subset=de_subsets,
 	     log2FC_cutoff = config['log2FC_cutoff']
             )
     run:
         print("List of Samples:", samples)
-
-=======
-            de_subset=de_subsets,
-            log2FC_cutoff=config['log2FC_cutoff']
-        )
-    run:
-        print("List of Samples:", samples)
->>>>>>> 757f3af0544c9b7d2f0b8a7215b3a90b101b376d
 
 #=============================================================== FASTQC AND TRIMMING =======================================================================#
 
