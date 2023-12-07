@@ -1,7 +1,7 @@
-read_dir: "."
-genome_fasta: "dm6.fa"
-gtf: "dm6_2L.gtf"
-#gene_info: "gene_info.txt"
+read_dir: "example"
+genome_fasta: "example/dm6.fa"
+gtf: "example/dm6_2L.gtf"
+gene_info: "example/gene_info.txt"
 log2FC_cutoff: 2
 trimmomatic_threads: 1
 star_build_threads: 1

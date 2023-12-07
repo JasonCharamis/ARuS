@@ -33,22 +33,34 @@ def all_pairs(x):
 
 de_subsets = all_pairs(groups)
 
+# Add a new wildcard for the subset
+wildcard_constraints:
+    de_subset = "|".join(de_subsets)
+
+
+log2FC_cutoff = config['log2FC_cutoff']
+
 #==================================================================== RULE ALL ============================================================================#
 
 rule all:
     input:
-        expand ({de_subset}.P1e-3_C{log2FC_cutoff}.DE.annotated.sorted.xlsx", 
-	         de_subset = de_subsets, 
-		 log2FC_cutoff=config['log2FC_cutoff'] )
+        expand(
+            "{de_subset}.P1e-3_C{log2FC_cutoff}.DE.annotated.sorted.xlsx",
+	     de_subset=de_subsets,
+	     log2FC_cutoff = config['log2FC_cutoff']
+            )
+    run:
+        print("List of Samples:", samples)
+
 
 #=============================================================== FASTQC AND TRIMMING =======================================================================#
 
 rule fastqc:
     input:
-        r1='{samples}_1.fastq.gz',
-        r2='{samples}_2.fastq.gz'
+        r1='{sample}_1.fastq.gz',
+        r2='{sample}_2.fastq.gz'
 
-    output: "fastqc/{samples}_fastqc/fastqc_report.html"
+    output: "fastqc/{sample}_fastqc/fastqc_report.html"
     conda: "envs/rnaseq.yaml"
     threads: 1
 
@@ -65,9 +77,9 @@ rule download_trimmomatic_adapters:
 
 rule trim_reads:
     input:
+        adapters='TruSeq3-PE.fa',
         r1='{sample}_1.fastq.gz',
         r2='{sample}_2.fastq.gz',
-        'TruSeq3-PE.fa'
     output:
         r1_trimmed='{sample}_1.trimmed.fastq.gz',
         r2_trimmed='{sample}_2.trimmed.fastq.gz',
@@ -77,7 +89,7 @@ rule trim_reads:
     threads: config['trimmomatic_threads']
     message: "Adapter-trimming reads"
     shell:
-        """ trimmomatic PE -threads {threads} {input.r1} {input.r2} {output.r1_trimmed} {output.r1_garbage} {output.r2_trimmed} {output.r2_garbage} ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:50 """
+        """ trimmomatic PE -threads {threads} {input.r1} {input.r2} {output.r1_trimmed} {output.r1_garbage} {output.r2_trimmed} {output.r2_garbage} ILLUMINACLIP:{input.adapters}:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:50 """
 
 
 #==================================================================== MAPPING =============================================================================#
@@ -151,19 +163,15 @@ rule make_directories:
         pca="PCA.svg",
         counts="counts.txt"
     output:
-        directory("edgeR"),
-        directory("01_run_DE_analysis"),
-        directory("02_analyze_DE"),
         "chkp"
 
-    shell: """ mkdir edgeR &&
-               cd edgeR &&
-               mkdir 01_run_DE_analysis &&
-               mkdir 02_analyze_DE &&
-               cd ../ &&
-               cp counts.mod.txt edgeR/01_run_DE_analysis/ &&
-               cp {input.samples_list} edgeR/01_run_DE_analysis/ &&
-               touch chkp  """
+    shell: """ 
+    mkdir -p edgeR/01_run_DE_analysis &&
+    mkdir -p edgeR/02_analyze_DE &&
+    cp counts.mod.txt edgeR/01_run_DE_analysis/ &&
+    cp {input.samples_list} edgeR/01_run_DE_analysis/ &&
+    touch chkp
+    """
 
 
 rule run_DE_analysis:
@@ -182,40 +190,40 @@ rule run_DE_analysis:
 
 rule analyze_DE:
     input: 'edgeR/chkp01'
-    output: 'edgeR/chkp02'
-    params: log2FC_cutoff=config['log2FC_cutoff']
+    output: expand('edgeR/02_analyze_DE/counts.mod.txt.{de_subset}.edgeR.DE_results.P1e-3_C{log2FC_cutoff}.DE.subset', de_subset = de_subsets, log2FC_cutoff = log2FC_cutoff ),
+    	    'edgeR/chkp02'
     shell: """ cd edgeR/02_analyze_DE &&
             ln -s ../01_run_DE_analysis/edgeR.*/counts.mod.txt* . &&
-            perl ARuS/workflow/scripts/analyze_diff_expr.pl --matrix ../../counts.mod.txt --samples ../01_run_DE_analysis/samples.list -P 1e-3 -C {params.log2FC_cutoff} &&
+            perl ARuS/workflow/scripts/analyze_diff_expr.pl --matrix ../../counts.mod.txt --samples ../01_run_DE_analysis/samples.list -P 1e-3 -C {log2FC_cutoff} &&
             cd ../ &&
             touch chkp02 &&
             rm ../chkp ../{input} ../{output} """
 
 
 rule rename:
-    input: subset_file='edgeR/02_analyze_DE/counts.mod.txt.{de_subset}.edgeR.DE_results.P1e-3_C{params.log2FC_cutoff}.DE.subset'
-    params: log2FC_cutoff=config['log2FC_cutoff']
-    output: subset_file_renamed='edgeR/02_analyze_DE/{de_subset}.P1e-3_C{params.log2FC_cutoff}.DE.subset'
-    shell: """ perl ARuS/workflow/scripts/rename.pl {input.subset_file} """
+    input:
+        subset_file='edgeR/02_analyze_DE/counts.mod.txt.{de_subset}.edgeR.DE_results.P1e-3_C{log2FC_cutoff}.DE.subset'
+    output:
+        subset_file_renamed='edgeR/02_analyze_DE/{de_subset}.P1e-3_C{log2FC_cutoff}.DE.subset'
+    shell:
+        """ perl ARuS/workflow/scripts/rename.pl {input.subset_file} """
 
 
 #================================================================== POST DE ANNOTATION =================================================================#
 
 rule annotate_DE:
-    input: de_file="edgeR/02_analyze_DE/{de_subset}.P1e-3_C{params.log2FC_cutoff}.DE.subset", gene_info=config['gene_info']
-    params: log2FC_cutoff=config['log2FC_cutoff']
-    output: annotated="edgeR/02_analyze_DE/{de_subset}.P1e-3_C{params.log2FC_cutoff}.DE.annotated.tsv"
+    input: de_file="edgeR/02_analyze_DE/{de_subset}.P1e-3_C{log2FC_cutoff}.DE.subset", gene_info=config['gene_info']
+    output: annotated="edgeR/02_analyze_DE/{de_subset}.P1e-3_C{log2FC_cutoff}.DE.annotated.tsv"
     shell: """ perl ARuS/workflow/scripts/annotate_DE.pl {input.de_file} {input.gene_info} > {output.annotated} """
 
 
 rule reverse_sort:
-    input: unsorted="edgeR/02_analyze_DE/{de_subset}.P1e-3_C{params.log2FC_cutoff}.DE.annotated.tsv"
-    params: log2FC_cutoff=config['log2FC_cutoff']
-    output: sorted="edgeR/02_analyze_DE/{de_subset}.P1e-3_C{params.log2FC_cutoff}.DE.annotated.sorted.tsv"
-    shell: """ perl ARuS/workflow/scripts/reverse_sort.pl {input.unsorted} > {output.orthology_sorted} && mv {output.orthology_sorted} ../../ """
+    input: unsorted="edgeR/02_analyze_DE/{de_subset}.P1e-3_C{log2FC_cutoff}.DE.annotated.tsv"
+    output: sorted="{de_subset}.P1e-3_C{log2FC_cutoff}.DE.annotated.sorted.tsv"
+    shell: """ perl ARuS/workflow/scripts/reverse_sort.pl {input.unsorted} > {output.sorted} && mv {output.sorted} ../../ """
 
 
 rule tsv2xlsx:
-    input: tsv="{de_subset}.P1e-3_C{params.log2FC_cutoff}.DE.annotated.sorted.tsv"
-    params: log2FC_cutoff=config['log2FC_cutoff']
-    output: "{de_subset}.P1e-3_C{params.log2FC_cutoff}.DE.annotated.sorted.xlsx"
+    input: tsv="{de_subset}.P1e-3_C{log2FC_cutoff}.DE.annotated.sorted.tsv"
+    output: "{de_subset}.P1e-3_C{log2FC_cutoff}.DE.annotated.sorted.xlsx"
+    shell: """ python3 scripts/tsv2xlsx.py {input.tsv} """
