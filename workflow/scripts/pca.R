@@ -45,7 +45,8 @@ xt = t(logtpms)
 
 ## generate sample names for grouping replicates ##
 xt <- as.data.frame(xt)
-groups <- str_replace(rownames(xt), "\\d$", "")
+
+groups <- gsub("_\\d+$|d\\d+", "", rownames(xt))
 
 ## add column with sample name to group replicates ##
 xtl <- xt %>% add_column(Sample = groups)
