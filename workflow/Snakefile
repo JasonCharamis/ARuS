@@ -1,28 +1,52 @@
-import os
+ximport os
 import re
 import subprocess
 import itertools
 
 
-include: "snakemake_utils.smk"
+#=============================================================== DOWNLOAD DATA AND GENOME =======================================================================#
 
+def download_data(data_url):
+    subprocess.run(["wget", "-O", "data.tar.gz", data_url])
+    subprocess.run(["gunzip", "data.tar.gz"])
+    subprocess.run(["mkdir", "data"])
+    subprocess.run(["tar", "-xf", "data.tar", "--strip-components=1", "-C", "./data"])
 
-#=============================================================== Pipeline Configuration ======================================================================#
+def rename_data(files):
+    for file in files:
+        base_name = os.path.basename(file)
+        new_name = os.path.join(os.path.dirname(file), base_name.replace('.trim.sub', ''))
+        os.rename(file, new_name)
 
-if is_docker():
-    configfile: str(find_repository_name(start_dir=".")) + "/config/config.yaml"
-else:
-    configfile: str(find_workflow_path(dir=".")) + "config/config.yaml"
+def check_filenames(directory_path, regex_pattern):
+    try:
+        if not os.path.exists(directory_path) or not os.path.isdir(directory_path):
+            print(f"The directory {directory_path} does not exist.")
+            return
 
-## Wildcards
-read_directory_path = config['read_dir']
+        pattern = re.compile(regex_pattern)
+        matching_filenames = [filename for filename in glob(os.path.join(directory_path, "*.fastq")) if re.search(pattern, filename)]
 
-# Create a set of sample names by combining the directory name and file prefixes
-samples = sorted({os.path.basename(read_directory_path) + "/" + f[:-8] for f in os.listdir(read_directory_path) if f.endswith(".fastq")})
+        if matching_filenames:
+            return matching_filenames
 
-wildcard_constraints: samples = "trimm"
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
+data_url = config["data_url"]
+data_dir = "data"
+
+if not os.path.exists(data_dir) and not os.path.isdir(data_dir):
+    download_data(data_url)
+
+matching_files = check_filenames(data_dir, "trim")
+
+if matching_files:
+    rename_data(files=matching_files)
+
+samples = [str(file) for file in sorted([f[:-8] for f in os.listdir(data_dir) if f.endswith(".fastq")])]
 groups = list(set((re.sub(".*/", "", s) for s in samples)))
+
 
 def all_pairs(x):
     comparisons = {}
@@ -30,15 +54,19 @@ def all_pairs(x):
         comparisons[str(sample1 + "_" + sample2)] = str(sample1 + "_vs_" + sample2)
     return list(comparisons.values())
 
-
 de_subsets = all_pairs(groups)
 
 # Add a new wildcard for the subset
 wildcard_constraints:
     de_subset = "|".join(de_subsets)
 
-
 log2FC_cutoff = config['log2FC_cutoff']
+
+rule download_genome:
+    output: "genome.fasta"
+    params: genome_url=config["genome_url"]
+    shell: """ wget -O 'genome.fasta.gz' {params.genome_url} && gunzip 'genome.fasta.gz' """
+
 
 #==================================================================== RULE ALL ============================================================================#
 
@@ -60,7 +88,7 @@ rule fastqc:
         r2='{sample}_2.fastq.gz'
 
     output: "fastqc/{sample}_fastqc/fastqc_report.html"
-    conda: "envs/rnaseq.yaml"
+    conda: "envs/config.yaml"
     threads: 1
 
     shell:
@@ -84,7 +112,7 @@ rule trim_reads:
         r2_trimmed='{sample}_2.trimmed.fastq.gz',
         r1_garbage=temp('{sample}_1.garbage.fastq.gz'),
         r2_garbage=temp('{sample}_2.garbage.fastq.gz')
-    conda: "envs/rnaseq.yaml"
+    conda: "envs/config.yaml"
     threads: config['trimmomatic_threads']
     message: "Adapter-trimming reads"
     shell:
@@ -95,15 +123,14 @@ rule trim_reads:
 
 rule build_genome_index:
     output: 'index_chkp'
-    conda: "envs/rnaseq.yaml"
+    conda: "envs/config.yaml"
     threads: config['star_build_threads']
     message: "Building genome index"
     params:
         genome_fasta=config['genome_fasta'],
         gtf=config['gtf']
     shell:
-        """ mkdir genome/ && STAR --runThreadN {threads} --runMode genomeGenerate --genomeDir genome/ --genomeFastaFiles {params.genome_fasta} --sjdbGTFfile {params.gtf} --sjdbOverhang 149 &&
-            touch index_chkp """
+        """ mkdir genome/ && STAR --runThreadN {threads} --runMode genomeGenerate --genomeDir genome/ --genomeFastaFiles {params.genome_fasta} --sjdbGTFfile {params.gtf} --sjdbOverhang 149 && touch index_chkp """
 
 
 rule mapping:
@@ -112,7 +139,7 @@ rule mapping:
         r1='{sample}_1.fastq',
         r2='{sample}_2.fastq',
     output: '{sample}.Aligned.sortedByCoord.out.bam'
-    conda: "envs/rnaseq.yaml"
+    conda: "envs/config.yaml"
     message: "Mapping reads to genome and convert to sorted BAM"
     threads: config['star_map_threads']
     shell:
@@ -124,7 +151,7 @@ rule mapping:
 rule count:
     input: bams=expand('{sample}.Aligned.sortedByCoord.out.bam', sample=samples)
     output: counts='counts.txt'
-    conda: "envs/rnaseq.yaml"
+    conda: "envs/config.yaml"
     threads: config['featureCounts_threads']
     params: gtf=config['gtf']
     shell:
@@ -135,7 +162,7 @@ rule modify:
     output: counts_mod="counts.mod.txt"
     shell:
         """ perl ARuS/workflow/scripts/counts_mod.pl > {output.counts_mod} """
-
+        
 rule samples_list:
     input: counts_mod="counts.mod.txt"
     output: samples_list="samples.list"

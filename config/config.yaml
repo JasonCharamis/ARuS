@@ -1,5 +1,7 @@
-read_dir: "example"
-genome_fasta: "example/dm6.fa"
+
+data_url: "https://ndownloader.figshare.com/files/14418248"
+read_dir: "data"
+genome_url: "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/017/985/GCA_000017985.1_ASM1798v1/GCA_000017985.1_ASM1798v1_genomic.fna.gz"
 gtf: "example/dm6_2L.gtf"
 gene_info: "example/gene_info.txt"
 log2FC_cutoff: 2
