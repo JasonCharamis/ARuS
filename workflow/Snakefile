@@ -63,9 +63,12 @@ wildcard_constraints:
 log2FC_cutoff = config['log2FC_cutoff']
 
 rule download_genome:
-    output: "genome.fasta"
-    params: genome_url=config["genome_url"]
-    shell: """ wget -O 'genome.fasta.gz' {params.genome_url} && gunzip 'genome.fasta.gz' """
+    output: genome = "genome.fasta",
+            gtf = "genome.gtf"
+    params: genome_url=config["genome_url"],
+            gtf_url=config["gtf_url"]
+    
+    shell: """ wget -O 'genome.fasta.gz' {params.genome_url} && gunzip 'genome.fasta.gz' && wget -O 'genome.gtf.gz' {params.gtf_url} && gunzip 'genome.gtf.gz' """
 
 
 #==================================================================== RULE ALL ============================================================================#
