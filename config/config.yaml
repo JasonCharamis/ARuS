@@ -1,9 +1,9 @@
 
-data_url: "https://ndownloader.figshare.com/files/14418248"
-read_dir: "data"
-genome_url: "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/017/985/GCA_000017985.1_ASM1798v1/GCA_000017985.1_ASM1798v1_genomic.fna.gz"
-gtf: "example/dm6_2L.gtf"
-gene_info: "example/gene_info.txt"
+data_dir: "Hard-coded name of directory with fastq files"
+genome_url: "Hard-coded name of genome fasta file"
+gtf: "Hard-coded name of gtf file"
+gene_info: "Hard-coded name of gene annotation file"
+
 log2FC_cutoff: 2
 trimmomatic_threads: 1
 star_build_threads: 1

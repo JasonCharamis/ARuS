@@ -1,22 +1,10 @@
-ximport os
+import os
 import re
 import subprocess
 import itertools
 
 
-#=============================================================== DOWNLOAD DATA AND GENOME =======================================================================#
-
-def download_data(data_url):
-    subprocess.run(["wget", "-O", "data.tar.gz", data_url])
-    subprocess.run(["gunzip", "data.tar.gz"])
-    subprocess.run(["mkdir", "data"])
-    subprocess.run(["tar", "-xf", "data.tar", "--strip-components=1", "-C", "./data"])
-
-def rename_data(files):
-    for file in files:
-        base_name = os.path.basename(file)
-        new_name = os.path.join(os.path.dirname(file), base_name.replace('.trim.sub', ''))
-        os.rename(file, new_name)
+#=============================================================== UTILITY FUNCTIONS =======================================================================#
 
 def check_filenames(directory_path, regex_pattern):
     try:
@@ -33,19 +21,15 @@ def check_filenames(directory_path, regex_pattern):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-data_url = config["data_url"]
-data_dir = "data"
+        
+trimmed_files = check_filenames(data_dir, "trim")
 
-if not os.path.exists(data_dir) and not os.path.isdir(data_dir):
-    download_data(data_url)
+if trimmed_files:
+    print ( f'Trimmed files {trimmed_files} are present!' )
 
-matching_files = check_filenames(data_dir, "trim")
-
-if matching_files:
-    rename_data(files=matching_files)
-
-samples = [str(file) for file in sorted([f[:-8] for f in os.listdir(data_dir) if f.endswith(".fastq")])]
-groups = list(set((re.sub(".*/", "", s) for s in samples)))
+    
+replicates = [str(file) for file in sorted([f[:-8] if f not in trimmed_files for f in os.listdir(data_dir) if f.endswith(".fastq")])]
+groups = list(set((re.sub(".*/", "", s) for s in replicates)))  
 
 
 def all_pairs(x):
@@ -62,14 +46,6 @@ wildcard_constraints:
 
 log2FC_cutoff = config['log2FC_cutoff']
 
-rule download_genome:
-    output: genome = "genome.fasta",
-            gtf = "genome.gtf"
-    params: genome_url=config["genome_url"],
-            gtf_url=config["gtf_url"]
-    
-    shell: """ wget -O 'genome.fasta.gz' {params.genome_url} && gunzip 'genome.fasta.gz' && wget -O 'genome.gtf.gz' {params.gtf_url} && gunzip 'genome.gtf.gz' """
-
 
 #==================================================================== RULE ALL ============================================================================#
 
@@ -81,16 +57,16 @@ rule all:
 	     log2FC_cutoff = config['log2FC_cutoff']
             )
     run:
-        print("List of Samples:", samples)
+        print("List of Replicates:", replicates)
 
 #=============================================================== FASTQC AND TRIMMING =======================================================================#
 
 rule fastqc:
     input:
-        r1='{sample}_1.fastq.gz',
-        r2='{sample}_2.fastq.gz'
+        r1='{replicate}_1.fastq.gz',
+        r2='{replicate}_2.fastq.gz'
 
-    output: "fastqc/{sample}_fastqc/fastqc_report.html"
+    output: "fastqc/{replicate}_fastqc/fastqc_report.html"
     conda: "envs/config.yaml"
     threads: 1
 
@@ -108,13 +84,13 @@ rule download_trimmomatic_adapters:
 rule trim_reads:
     input:
         adapters='TruSeq3-PE.fa',
-        r1='{sample}_1.fastq.gz',
-        r2='{sample}_2.fastq.gz',
+        r1='{replicate}_1.fastq.gz',
+        r2='{replicate}_2.fastq.gz',
     output:
-        r1_trimmed='{sample}_1.trimmed.fastq.gz',
-        r2_trimmed='{sample}_2.trimmed.fastq.gz',
-        r1_garbage=temp('{sample}_1.garbage.fastq.gz'),
-        r2_garbage=temp('{sample}_2.garbage.fastq.gz')
+        r1_trimmed='{replicate}_1.trimmed.fastq.gz',
+        r2_trimmed='{replicate}_2.trimmed.fastq.gz',
+        r1_garbage=temp('{replicate}_1.garbage.fastq.gz'),
+        r2_garbage=temp('{replicate}_2.garbage.fastq.gz')
     conda: "envs/config.yaml"
     threads: config['trimmomatic_threads']
     message: "Adapter-trimming reads"
@@ -139,20 +115,20 @@ rule build_genome_index:
 rule mapping:
     input:
         ch='index_chkp',
-        r1='{sample}_1.fastq',
-        r2='{sample}_2.fastq',
-    output: '{sample}.Aligned.sortedByCoord.out.bam'
+        r1='{replicate}_1.fastq',
+        r2='{replicate}_2.fastq',
+    output: '{replicate}.Aligned.sortedByCoord.out.bam'
     conda: "envs/config.yaml"
     message: "Mapping reads to genome and convert to sorted BAM"
     threads: config['star_map_threads']
     shell:
-        """ STAR --runThreadN {threads} --readFilesIn {input.r1} {input.r2} --genomeDir genome/ --outSAMtype BAM SortedByCoordinate --outFileNamePrefix {wildcards.sample}. """
+        """ STAR --runThreadN {threads} --readFilesIn {input.r1} {input.r2} --genomeDir genome/ --outSAMtype BAM SortedByCoordinate --outFileNamePrefix {wildcards.replicate}. """
 
 
 #================================================================== COUNT ============================================================================#
 
 rule count:
-    input: bams=expand('{sample}.Aligned.sortedByCoord.out.bam', sample=samples)
+    input: bams=expand('{replicate}.Aligned.sortedByCoord.out.bam', replicate=replicates)
     output: counts='counts.txt'
     conda: "envs/config.yaml"
     threads: config['featureCounts_threads']
@@ -166,11 +142,11 @@ rule modify:
     shell:
         """ perl ARuS/workflow/scripts/counts_mod.pl > {output.counts_mod} """
         
-rule samples_list:
+rule replicates_list:
     input: counts_mod="counts.mod.txt"
-    output: samples_list="samples.list"
+    output: replicates_list="samples.list"
     shell:
-        """ perl ARuS/workflow/scripts/counts_to_samples_list.pl {input.counts_mod} | sort -Vk2 > {output.samples_list} """
+        """ perl ARuS/workflow/scripts/counts_to_replicates_list.pl {input.counts_mod} | sort -Vk2 > {output.replicates_list} """
 
 rule counts_to_tpm:
     input: counts="counts.txt",
@@ -188,7 +164,7 @@ rule pca:
 
 rule make_directories:
     input:
-        samples_list="samples.list",
+        replicates_list="samples.list",
         pca="PCA.svg",
         counts="counts.txt"
     output:
@@ -198,7 +174,7 @@ rule make_directories:
     mkdir -p edgeR/01_run_DE_analysis &&
     mkdir -p edgeR/02_analyze_DE &&
     cp counts.mod.txt edgeR/01_run_DE_analysis/ &&
-    cp {input.samples_list} edgeR/01_run_DE_analysis/ &&
+    cp {input.replicates_list} edgeR/01_run_DE_analysis/ &&
     touch chkp
     """
 
@@ -206,13 +182,13 @@ rule make_directories:
 rule run_DE_analysis:
     input:
         counts_file="counts.mod.txt",
-        samples_list="samples.list",
+        replicates_list="samples.list",
         chkp='chkp'
 
     output: 'edgeR/chkp01'
 
     shell: """ cd edgeR/01_run_DE_analysis &&
-               perl ARuS/workflow/scripts/run_DE_analysis.pl --matrix ../../../{input.counts_file} --method edgeR --samples_file ../../{input.samples_list} &&
+               perl ARuS/workflow/scripts/run_DE_analysis.pl --matrix ../../../{input.counts_file} --method edgeR --replicates_file ../../{input.replicates_list} &&
                cd ../ &&
                touch chkp01 """
 
@@ -223,7 +199,7 @@ rule analyze_DE:
     	    'edgeR/chkp02'
     shell: """ cd edgeR/02_analyze_DE &&
             ln -s ../01_run_DE_analysis/edgeR.*/counts.mod.txt* . &&
-            perl ARuS/workflow/scripts/analyze_diff_expr.pl --matrix ../../counts.mod.txt --samples ../01_run_DE_analysis/samples.list -P 1e-3 -C {log2FC_cutoff} &&
+            perl ARuS/workflow/scripts/analyze_diff_expr.pl --matrix ../../counts.mod.txt --replicates ../01_run_DE_analysis/samples.list -P 1e-3 -C {log2FC_cutoff} &&
             cd ../ &&
             touch chkp02 &&
             rm ../chkp ../{input} ../{output} """
