@@ -28,7 +28,7 @@ if trimmed_files:
     print ( f'Trimmed files {trimmed_files} are present!' )
 
     
-replicates = [str(file) for file in sorted([f[:-8] if f not in trimmed_files for f in os.listdir(data_dir) if f.endswith(".fastq")])]
+replicates = [str(file) for file in sorted([f[:-8] for f in os.listdir(data_dir) if f.endswith(".fastq")])]
 groups = list(set((re.sub(".*/", "", s) for s in replicates)))  
 
 
