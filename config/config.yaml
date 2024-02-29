@@ -1,6 +1,6 @@
 
 data_dir: "Hard-coded name of directory with fastq files"
-genome_url: "Hard-coded name of genome fasta file"
+genome_data: "Hard-coded name of genome fasta file"
 gtf: "Hard-coded name of gtf file"
 gene_info: "Hard-coded name of gene annotation file"
 
