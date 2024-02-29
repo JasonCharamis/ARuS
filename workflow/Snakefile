@@ -21,7 +21,8 @@ def check_filenames(directory_path, regex_pattern):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-        
+
+data_dir = config['data_dir']
 trimmed_files = check_filenames(data_dir, "trim")
 
 if trimmed_files:
