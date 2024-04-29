@@ -14,7 +14,7 @@ my @down = ();
 while ( my $line = <IN> ) {
     chomp $line;
 
-    if ( $. == 1 ) { print "$line\n"; next; }
+    if ( $line =~ /Geneid/ ) { print "$line\n"; next; }
     
     my @f = split (/\t/,$line);
 
